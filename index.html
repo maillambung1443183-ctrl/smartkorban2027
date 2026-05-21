@@ -2,51 +2,43 @@
 <html lang="ms">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KorbanSmart 2027</title>
+    <title>KorbanSmart 2027 - Login</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #eef2f3; display: flex; justify-content: center; padding: 20px; }
-        form { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
-        h2 { color: #10b981; text-align: center; }
-        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; background: #10b981; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        body { font-family: sans-serif; background: #eef2f3; display: flex; justify-content: center; padding: 50px; }
+        .box { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); width: 100%; max-width: 350px; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: #3b82f6; color: white; border: none; border-radius: 8px; cursor: pointer; }
     </style>
 </head>
 <body>
 
-<form id="borangBayaran">
-    <h2>KorbanSmart 2027</h2>
-    <input type="text" name="idPeserta" placeholder="ID Peserta" required>
-    <input type="number" name="jumlahBayaran" placeholder="Amaun (RM)" required>
-    <input type="date" name="tarikhBankIn" required>
-    <input type="text" name="noRujukan" placeholder="No Rujukan Bank" required>
-    <button type="submit" id="btnHantar">Hantar Pembayaran</button>
-</form>
+<div class="box" id="loginBox">
+    <h2>Log Masuk</h2>
+    <input type="text" id="username" placeholder="Nama Pengguna">
+    <input type="password" id="password" placeholder="Kata Laluan">
+    <button onclick="login()">Masuk</button>
+</div>
+
+<div class="box" id="borangBox" style="display:none;">
+    <h2>Borang Pembayaran</h2>
+    <form id="borangBayaran">
+        <input type="text" name="idPeserta" placeholder="ID Peserta" required>
+        <input type="number" name="jumlahBayaran" placeholder="Amaun (RM)" required>
+        <button type="submit">Hantar</button>
+    </form>
+</div>
 
 <script>
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbzMkZqZJw6UDBLyVbEcgm2_waMfFR94hQNRoaOmaKtaACF_4TSS5cmL7lTqyiCCTQbF1w/exec';
-    const form = document.getElementById('borangBayaran');
-    const btn = document.getElementById('btnHantar');
-
-    form.addEventListener('submit', e => {
-        e.preventDefault();
-        btn.innerHTML = "Sedang menghantar...";
-        
-        fetch(scriptURL, { 
-            method: 'POST', 
-            body: new FormData(form),
-            mode: 'no-cors' 
-        })
-        .then(() => {
-            alert('Pembayaran berjaya direkodkan!');
-            btn.innerHTML = "Hantar Pembayaran";
-            form.reset();
-        })
-        .catch(error => {
-            alert('Ralat! Sila cuba lagi.');
-            btn.innerHTML = "Hantar Pembayaran";
-        });
-    });
+    function login() {
+        // Logik mudah: Username dan Password mestilah 'admin'
+        if(document.getElementById('username').value == "admin" && 
+           document.getElementById('password').value == "1234") {
+            document.getElementById('loginBox').style.display = 'none';
+            document.getElementById('borangBox').style.display = 'block';
+        } else {
+            alert("Nama pengguna atau kata laluan salah!");
+        }
+    }
 </script>
 </body>
 </html>
