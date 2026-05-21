@@ -1,61 +1,52 @@
 <!DOCTYPE html>
-<html>
+<html lang="ms">
 <head>
-  <meta charset="UTF-8">
-  <title>KorbanSmart 2027</title>
-  <style>
-    body { font-family: sans-serif; background: #eef2f3; padding: 20px; }
-    .box { background: white; max-width: 400px; margin: auto; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-    input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
-    button { width: 100%; padding: 12px; background: #2e7d32; color: white; border: none; border-radius: 6px; cursor: pointer; margin-top: 10px; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KorbanSmart 2027</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #eef2f3; display: flex; justify-content: center; padding: 20px; }
+        form { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
+        h2 { color: #10b981; text-align: center; }
+        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: #10b981; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+    </style>
 </head>
 <body>
 
-<div class="box" id="auth">
-  <h2>Login Peserta</h2>
-  <input type="text" id="id" placeholder="ID Peserta">
-  <input type="password" id="pass" placeholder="Password">
-  <button onclick="login()">Masuk</button>
-  <button onclick="daftar()" style="background:#555;">Daftar Baru</button>
-</div>
-
-<div class="box" id="app" style="display:none;">
-  <h2>Borang Bayaran</h2>
-  <input type="number" id="jumlah" placeholder="Amaun (RM)">
-  <button onclick="bayar()">Hantar Bayaran</button>
-</div>
+<form id="borangBayaran">
+    <h2>KorbanSmart 2027</h2>
+    <input type="text" name="idPeserta" placeholder="ID Peserta" required>
+    <input type="number" name="jumlahBayaran" placeholder="Amaun (RM)" required>
+    <input type="date" name="tarikhBankIn" required>
+    <input type="text" name="noRujukan" placeholder="No Rujukan Bank" required>
+    <button type="submit" id="btnHantar">Hantar Pembayaran</button>
+</form>
 
 <script>
-  const URL = "https://script.google.com/macros/s/AKfycbyPEpEILwUAeeV234iEbyKU0b7KgK6hMbNELD0TKqH74Jl3zEH1mb2UrorKbhDSQsfaIQ/exec";
-  let currentId = "";
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbzMkZqZJw6UDBLyVbEcgm2_waMfFR94hQNRoaOmaKtaACF_4TSS5cmL7lTqyiCCTQbF1w/exec';
+    const form = document.getElementById('borangBayaran');
+    const btn = document.getElementById('btnHantar');
 
-  function login() {
-    const id = document.getElementById('id').value;
-    const pass = document.getElementById('pass').value;
-    fetch(`${URL}?id=${id}&pass=${pass}`)
-      .then(res => res.text())
-      .then(res => {
-        if(res === "LOGIN_BERJAYA") {
-          currentId = id;
-          document.getElementById('auth').style.display = 'none';
-          document.getElementById('app').style.display = 'block';
-        } else { alert("Login Gagal!"); }
-      });
-  }
-
-  function daftar() {
-    const id = document.getElementById('id').value;
-    const pass = document.getElementById('pass').value;
-    fetch(URL, { method: 'POST', body: new URLSearchParams({action: 'daftar', id: id, pass: pass}) })
-      .then(() => alert("Daftar Berjaya!"));
-  }
-
-  function bayar() {
-    const jumlah = document.getElementById('jumlah').value;
-    fetch(URL, { method: 'POST', body: new URLSearchParams({action: 'bayar', id: currentId, jumlah: jumlah}) })
-      .then(() => alert("Bayaran Berjaya!"));
-  }
+    form.addEventListener('submit', e => {
+        e.preventDefault();
+        btn.innerHTML = "Sedang menghantar...";
+        
+        fetch(scriptURL, { 
+            method: 'POST', 
+            body: new FormData(form),
+            mode: 'no-cors' 
+        })
+        .then(() => {
+            alert('Pembayaran berjaya direkodkan!');
+            btn.innerHTML = "Hantar Pembayaran";
+            form.reset();
+        })
+        .catch(error => {
+            alert('Ralat! Sila cuba lagi.');
+            btn.innerHTML = "Hantar Pembayaran";
+        });
+    });
 </script>
 </body>
 </html>
