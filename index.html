@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { font-family: sans-serif; padding: 20px; background-color: #f4f7f6; }
+    .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 400px; margin: auto; }
+    input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+    button { width: 100%; padding: 10px; background: #27ae60; color: white; border: none; border-radius: 5px; cursor: pointer; }
+    #appSection { display: none; }
+  </style>
+</head>
+<body>
+
+<div class="card" id="authSection">
+  <h2>KorbanSmart 2027</h2>
+  <input type="text" id="id" placeholder="ID Peserta">
+  <input type="password" id="pass" placeholder="Password">
+  <button onclick="login()">Log Masuk</button>
+  <p style="text-align:center; cursor:pointer;" onclick="daftar()">Daftar Baru</p>
+</div>
+
+<div class="card" id="appSection">
+  <h2>Borang Bayaran</h2>
+  <input type="number" id="jumlah" placeholder="Amaun (RM)">
+  <button onclick="bayar()">Hantar Bayaran</button>
+</div>
+
+<script>
+  const url = "https://script.google.com/macros/s/AKfycby2HaCqKTsUS7tOkjE_6W3hrMRufBU2rfBd7sc510k3Iz_SMErKlh4zPEl5TEtiNMpeUw/exec";
+  let currentId = "";
+
+  function login() {
+    const id = document.getElementById('id').value;
+    const pass = document.getElementById('pass').value;
+    fetch(`${url}?id=${id}&pass=${pass}`)
+      .then(res => res.text())
+      .then(data => {
+        if(data === "LOGIN_BERJAYA") {
+          currentId = id;
+          document.getElementById('authSection').style.display = 'none';
+          document.getElementById('appSection').style.display = 'block';
+        } else { alert("ID atau Password salah!"); }
+      });
+  }
+
+  function daftar() {
+    const id = document.getElementById('id').value;
+    const pass = document.getElementById('pass').value;
+    fetch(url, { method: 'POST', body: new URLSearchParams({action: 'daftar', id: id, pass: pass}) })
+      .then(() => alert("Pendaftaran berjaya!"));
+  }
+
+  function bayar() {
+    const jumlah = document.getElementById('jumlah').value;
+    fetch(url, { method: 'POST', body: new URLSearchParams({action: 'bayar', id: currentId, jumlah: jumlah}) })
+      .then(() => alert("Bayaran berjaya dihantar!"));
+  }
+</script>
+</body>
+</html>
