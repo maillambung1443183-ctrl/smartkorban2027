@@ -39,11 +39,11 @@
         
         fetch(url, {method: 'POST', mode: 'no-cors', body: fd})
         .then(() => {
-            alert("Sila tunggu...");
+            alert("Login Berjaya!");
             document.getElementById('authPage').style.display='none';
             document.getElementById('dashPage').style.display='block';
         })
-        .catch(err => { console.error("Ralat:", err); });
+        .catch(err => console.error("Ralat:", err));
     }
 
     function tambah() {
@@ -61,7 +61,7 @@
             alert("Rekod telah dihantar!"); 
             location.reload(); 
         })
-        .catch(err => { console.error("Ralat:", err); });
+        .catch(err => console.error("Ralat:", err));
     }
 </script>
 </body>
