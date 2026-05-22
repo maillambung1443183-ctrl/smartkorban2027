@@ -2,7 +2,6 @@
 <html lang="ms">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KorbanSmart 2027</title>
     <style>
         body { font-family: sans-serif; background: #f8fafc; padding: 20px; }
@@ -14,16 +13,19 @@
 <body>
 
 <div id="authPage" class="page">
-    <h2 style="text-align:center;">KorbanSmart 2027</h2>
-    <input id="email" placeholder="Email"><input type="password" id="pass" placeholder="Password">
-    <button onclick="auth('login')">MASUK</button>
-    <p onclick="auth('register')" style="text-align:center; color:blue; cursor:pointer;">Daftar Baru</p>
+    <h2>Daftar/Log Masuk</h2>
+    <input id="email" placeholder="Email">
+    <input id="nama" placeholder="Nama Penuh (Untuk Daftar)">
+    <input id="tel" placeholder="No Tel (Untuk Daftar)">
+    <input type="number" id="bahagian" placeholder="Jumlah Bahagian (Untuk Daftar)">
+    <input type="password" id="pass" placeholder="Password">
+    <button onclick="auth('register')">DAFTAR BARU</button>
+    <button onclick="auth('login')" style="background:gray; margin-top:10px;">LOG MASUK</button>
 </div>
 
 <div id="dashPage" class="page" style="display:none;">
-    <p>BSN: Surau Al Falah TSCC - 0410041000169514</p>
-    <hr>
-    <input id="bahagian" placeholder="Bilangan Bahagian">
+    <h3>Tambah Rekod Bayaran</h3>
+    <input id="amt_bahagian" placeholder="Bilangan Bahagian">
     <input id="jumlah" placeholder="Jumlah Bayaran (RM)">
     <input id="tarikh" type="date">
     <input id="rujukan" placeholder="No Rujukan Bank">
@@ -40,12 +42,18 @@
         fd.append('action', act);
         fd.append('email', document.getElementById('email').value);
         fd.append('password', document.getElementById('pass').value);
+        if(act == 'register') {
+            fd.append('nama', document.getElementById('nama').value);
+            fd.append('tel', document.getElementById('tel').value);
+            fd.append('bahagian', document.getElementById('bahagian').value);
+        }
         fetch(url, {method:'POST', body:fd}).then(r=>r.text()).then(d=>{
+            alert(d);
             if(d=="Login Berjaya") {
                 document.getElementById('authPage').style.display='none';
                 document.getElementById('dashPage').style.display='block';
                 load();
-            } else alert(d);
+            }
         });
     }
 
@@ -53,12 +61,11 @@
         let fd = new FormData();
         fd.append('action', 'bayar');
         fd.append('email', document.getElementById('email').value);
-        fd.append('bahagian', document.getElementById('bahagian').value);
+        fd.append('bahagian', document.getElementById('amt_bahagian').value);
         fd.append('jumlah', document.getElementById('jumlah').value);
         fd.append('tarikh', document.getElementById('tarikh').value);
         fd.append('rujukan', document.getElementById('rujukan').value);
         fd.append('resit', document.getElementById('resit').value);
-        
         fetch(url, {method:'POST', body:fd}).then(r=>r.text()).then(d=>{ alert(d); load(); });
     }
 
