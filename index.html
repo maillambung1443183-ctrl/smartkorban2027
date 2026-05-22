@@ -1,60 +1,77 @@
 <!DOCTYPE html>
-<html>
+<html lang="ms">
 <head>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    body { font-family: sans-serif; padding: 20px; background: #f4f4f9; }
-    .page { background: white; padding: 20px; border-radius: 10px; max-width: 400px; margin: auto; }
-    input { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ccc; box-sizing: border-box; }
-    button { width: 100%; padding: 10px; background: #10b981; color: white; border: none; margin-top: 10px; cursor: pointer; }
-    .t { display: none; margin-top: 15px; border-top: 1px solid #eee; padding-top: 10px; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KorbanSmart 2027</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; background: #f4f4f9; display: flex; justify-content: center; }
+        .page { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
+        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: #10b981; color: white; border: none; border-radius: 6px; cursor: pointer; margin-top: 10px; }
+        .tab-content { display: none; margin-top: 20px; text-align: center; border-top: 2px solid #eee; padding-top: 15px; }
+        #dashPage { display: none; }
+    </style>
 </head>
 <body>
 
 <div id="authPage" class="page">
-  <h2 id="title">Login KorbanSmart</h2>
-  <input id="email" placeholder="Email"><input type="password" id="pass" placeholder="Password">
-  <button id="mainBtn" onclick="auth('login')">Masuk</button>
-  <p style="text-align:center; cursor:pointer; color:blue;" onclick="swap()">Daftar/Login</p>
+    <h2 id="title" style="text-align:center;">Login KorbanSmart</h2>
+    <input type="email" id="email" placeholder="Email">
+    <input type="password" id="pass" placeholder="Password">
+    <button id="mainBtn" onclick="auth()">Masuk</button>
+    <p style="text-align:center; cursor:pointer; color:blue; margin-top:15px;" onclick="swap()">Tukar ke Daftar/Login</p>
 </div>
 
-<div id="dashPage" class="page" style="display:none">
-  <h2>Dashboard</h2>
-  <button onclick="tab('k')">Kebaikan</button>
-  <button onclick="tab('p')">Pengurus</button>
-  <button onclick="tab('s')">Semak Bayaran</button>
-  <div id="k" class="t">Kebaikan: Syiar Islam & berkongsi rezeki.</div>
-  <div id="p" class="t">Pengurus: En. Awang (011-3333333)</div>
-  <div id="s" class="t">Jumlah Terkumpul: <span id="total">RM 0</span></div>
+<div id="dashPage" class="page">
+    <h2 style="text-align:center;">Dashboard</h2>
+    <button onclick="tab('k')">Kebaikan Korban</button>
+    <button onclick="tab('p')">Hubungi Pengurus</button>
+    <button onclick="tab('s')">Semak Bayaran</button>
+
+    <div id="k" class="tab-content">
+        <h3>Kebaikan Korban</h3>
+        <p>Ibadah korban adalah syiar Islam yang mulia untuk mensucikan harta.</p>
+    </div>
+
+    <div id="p" class="tab-content">
+        <h3>Pengurus Program</h3>
+        <p>En. Awang Mohd Fauzi<br>
+        <a href="tel:0113333333">011-3333333</a></p>
+    </div>
+
+    <div id="s" class="tab-content">
+        <h3>Jumlah Terkumpul</h3>
+        <p id="total">RM 0</p>
+    </div>
 </div>
 
 <script>
-  const url = 'https://script.google.com/macros/s/AKfycbwQe_GuUC-xVVUeR_d8OeLQ2ZVb8IfvYjiKEddenCGMBCOt4ssCH2ZP3DcH69Pq8F-JPw/exec';
-  let isLogin = true;
+    const url = 'https://script.google.com/macros/s/AKfycbyMKs01Cmu7FXqHx5qDMfB9JMGck3XHwwdbsPvl3bidpfKm5o0hvZAndMhn6QEKVQEnSg/exec';
+    let isLogin = true;
 
-  function swap() {
-    isLogin = !isLogin;
-    document.getElementById('title').innerText = isLogin ? "Login KorbanSmart" : "Daftar Akaun";
-    document.getElementById('mainBtn').innerText = isLogin ? "Masuk" : "Daftar";
-  }
+    function swap() {
+        isLogin = !isLogin;
+        document.getElementById('title').innerText = isLogin ? "Login KorbanSmart" : "Daftar Akaun";
+        document.getElementById('mainBtn').innerText = isLogin ? "Masuk" : "Daftar";
+    }
 
-  function auth(act) {
-    let e = document.getElementById('email').value, p = document.getElementById('pass').value;
-    fetch(`${url}?action=${isLogin?'login':'register'}&email=${e}&password=${p}`, {method:'POST'})
-    .then(r=>r.text()).then(d=>{
-      if(d=="Login Berjaya") {
-        document.getElementById('authPage').style.display='none';
-        document.getElementById('dashPage').style.display='block';
-        fetch(`${url}?action=getSummary&email=${e}`).then(r=>r.text()).then(t=>document.getElementById('total').innerText="RM "+t);
-      } else alert(d);
-    });
-  }
+    function auth() {
+        let e = document.getElementById('email').value, p = document.getElementById('pass').value;
+        fetch(`${url}?action=${isLogin?'login':'register'}&email=${e}&password=${p}`, {method:'POST'})
+        .then(r=>r.text()).then(d=>{
+            if(d.trim() == "Login Berjaya") {
+                document.getElementById('authPage').style.display='none';
+                document.getElementById('dashPage').style.display='block';
+                fetch(`${url}?action=getSummary&email=${e}`).then(r=>r.text()).then(t=>document.getElementById('total').innerText="RM "+t);
+            } else { alert(d); }
+        });
+    }
 
-  function tab(id) {
-    document.querySelectorAll('.t').forEach(e=>e.style.display='none');
-    document.getElementById(id).style.display='block';
-  }
+    function tab(id) {
+        document.querySelectorAll('.tab-content').forEach(e=>e.style.display='none');
+        document.getElementById(id).style.display='block';
+    }
 </script>
 </body>
 </html>
