@@ -13,11 +13,11 @@
 <body>
 
 <div id="authPage" class="page">
-    <h2>Daftar/Log Masuk</h2>
+    <h2 style="text-align:center;">KorbanSmart 2027</h2>
     <input id="email" placeholder="Email">
-    <input id="nama" placeholder="Nama Penuh (Untuk Daftar)">
-    <input id="tel" placeholder="No Tel (Untuk Daftar)">
-    <input type="number" id="bahagian" placeholder="Jumlah Bahagian (Untuk Daftar)">
+    <input id="nama" placeholder="Nama Penuh">
+    <input id="tel" placeholder="No Tel">
+    <input type="number" id="bahagian" placeholder="Jumlah Bahagian">
     <input type="password" id="pass" placeholder="Password">
     <button onclick="auth('register')">DAFTAR BARU</button>
     <button onclick="auth('login')" style="background:gray; margin-top:10px;">LOG MASUK</button>
@@ -35,9 +35,11 @@
 </div>
 
 <script>
-    const url = 'https://script.google.com/macros/s/AKfycbzM0Iu3h5-JWWxzfmimiylZmkk7oNY4ZP8csZTnUMTXdVyCcaThfYQjhtlO55_WL0mNvw/exec';
+    // Pautan URL terkini anda
+    const url = 'https://script.google.com/macros/s/AKfycbzIBJOhi7ZWO6mfwExfl6d_rRuFMWa6GIYnquRnyFPtRpT48Ub7QUwJmFyo3ae9MlHu1g/exec';
     
     function auth(act) {
+        alert("Sila tunggu, sedang memproses...");
         let fd = new FormData();
         fd.append('action', act);
         fd.append('email', document.getElementById('email').value);
@@ -58,6 +60,7 @@
     }
 
     function tambah() {
+        alert("Sila tunggu, sedang menghantar rekod...");
         let fd = new FormData();
         fd.append('action', 'bayar');
         fd.append('email', document.getElementById('email').value);
