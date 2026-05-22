@@ -1,18 +1,19 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>KorbanSmart 2027</title>
+    <meta charset="UTF-8">
 </head>
 <body>
 
     <input id="nama" placeholder="Nama">
     <input id="email" placeholder="Email">
     <input type="password" id="pass" placeholder="Password">
+    
     <button onclick="prosesDaftar()">DAFTAR</button>
 
     <script>
         function prosesDaftar() {
-            var url = const url = const url = 'https://script.google.com/macros/s/AKfycbxTUnwisHXr1BTuwwvSY7ExeJE7yCxxDEMl1vao-TtB-_SBDvJ-NwVzB_gZtOhIHzA/exec';
+            var url = 'https://script.google.com/macros/s/AKfycbxTUnwisHXr1BTuwwvSY7ExeJE7yCxxDEMl1vao-TtB-_SBDvJ-NwVzB_gZtOhIHzA/exec';
             
             var fd = new FormData();
             fd.append('action', 'register');
@@ -23,6 +24,9 @@
             fetch(url, {method: 'POST', mode: 'no-cors', body: fd})
             .then(function() {
                 alert('Data telah dihantar!');
+            })
+            .catch(function(err) {
+                alert('Ralat berlaku: ' + err);
             });
         }
     </script>
