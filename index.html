@@ -29,25 +29,23 @@
 </div>
 
 <script>
-    const url = https://script.google.com/macros/s/AKfycbwr_eYXSeMzsJ1B-2bQOP1ovMKUggXZ0-D4V-qwDFzuKw2dfme5eNbUCclz0ASlntwZnA/exec
-    
-    // Fungsi Login
+    const url = 'https://script.google.com/macros/s/AKfycbwr_eYXSeMzsJ1B-2bQOP1ovMKUggXZ0-D4V-qwDFzuKw2dfme5eNbUCclz0ASlntwZnA/exec';
+
     function auth(act) {
         let fd = new FormData();
         fd.append('action', act);
         fd.append('email', document.getElementById('email').value);
         fd.append('password', document.getElementById('pass').value);
         
-        // Guna no-cors untuk elak ralat CORS
         fetch(url, {method: 'POST', mode: 'no-cors', body: fd})
         .then(() => {
-            alert("Sila tunggu sebentar...");
+            alert("Sila tunggu...");
             document.getElementById('authPage').style.display='none';
             document.getElementById('dashPage').style.display='block';
-        });
+        })
+        .catch(err => { console.error("Ralat:", err); });
     }
 
-    // Fungsi Tambah Rekod
     function tambah() {
         let fd = new FormData();
         fd.append('action', 'bayar');
@@ -58,12 +56,12 @@
         fd.append('rujukan', document.getElementById('rujukan').value);
         fd.append('resit', document.getElementById('resit').value);
         
-        // Guna no-cors untuk elak ralat CORS
         fetch(url, {method: 'POST', mode: 'no-cors', body: fd})
         .then(() => { 
             alert("Rekod telah dihantar!"); 
             location.reload(); 
-        });
+        })
+        .catch(err => { console.error("Ralat:", err); });
     }
 </script>
 </body>
