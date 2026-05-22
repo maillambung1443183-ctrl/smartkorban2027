@@ -1,68 +1,18 @@
 <!DOCTYPE html>
-<html lang="ms">
+<html>
 <head>
-    <meta charset="UTF-8">
     <title>KorbanSmart 2027</title>
-    <style>
-        body { font-family: sans-serif; background: #f8fafc; padding: 20px; }
-        .page { max-width: 400px; margin: auto; padding: 20px; background: white; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; background: #059669; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
-    </style>
 </head>
 <body>
 
-<div id="authPage" class="page">
-    <h2 style="text-align:center;">KorbanSmart 2027</h2>
-    <input id="email" placeholder="Email"><input type="password" id="pass" placeholder="Password">
     <button onclick="auth('login')">MASUK</button>
-</div>
 
-<div id="dashPage" class="page" style="display:none;">
-    <h3>Tambah Rekod Bayaran</h3>
-    <input id="bahagian" placeholder="Bilangan Bahagian">
-    <input id="jumlah" placeholder="Jumlah Bayaran (RM)">
-    <input id="tarikh" type="date">
-    <input id="rujukan" placeholder="No Rujukan Bank">
-    <input id="resit" placeholder="Link Gambar Resit">
-    <button onclick="tambah()" style="background:orange;">HANTAR REKOD</button>
-</div>
-
-<script>
-    const url = 'https://script.google.com/macros/s/AKfycbwr_eYXSeMzsJ1B-2bQOP1ovMKUggXZ0-D4V-qwDFzuKw2dfme5eNbUCclz0ASlntwZnA/exec';
-
-    function auth(act) {
-        let fd = new FormData();
-        fd.append('action', act);
-        fd.append('email', document.getElementById('email').value);
-        fd.append('password', document.getElementById('pass').value);
-        
-        fetch(url, {method: 'POST', mode: 'no-cors', body: fd})
-        .then(() => {
-            alert("Login Berjaya!");
-            document.getElementById('authPage').style.display='none';
-            document.getElementById('dashPage').style.display='block';
-        })
-        .catch(err => console.error("Ralat:", err));
-    }
-
-    function tambah() {
-        let fd = new FormData();
-        fd.append('action', 'bayar');
-        fd.append('email', document.getElementById('email').value);
-        fd.append('bahagian', document.getElementById('bahagian').value);
-        fd.append('jumlah', document.getElementById('jumlah').value);
-        fd.append('tarikh', document.getElementById('tarikh').value);
-        fd.append('rujukan', document.getElementById('rujukan').value);
-        fd.append('resit', document.getElementById('resit').value);
-        
-        fetch(url, {method: 'POST', mode: 'no-cors', body: fd})
-        .then(() => { 
-            alert("Rekod telah dihantar!"); 
-            location.reload(); 
-        })
-        .catch(err => console.error("Ralat:", err));
-    }
-</script>
+    <script>
+        // Pastikan fungsi 'auth' ditulis di dalam sini
+        function auth(act) {
+            alert("Fungsi auth berjaya dipanggil!");
+            // ... kod lain anda ...
+        }
+    </script>
 </body>
 </html>
