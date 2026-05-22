@@ -10,9 +10,8 @@
         .page { max-width: 400px; margin: 40px auto; padding: 25px; background: white; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
         input { width: 100%; padding: 15px; margin: 10px 0; border: 2px solid #e2e8f0; border-radius: 12px; box-sizing: border-box; }
         button { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; }
-        .tab-content { display: none; padding: 20px 0; }
-        .nav-bar { position: fixed; bottom: 0; left: 0; width: 100%; display: flex; background: white; padding: 15px 0; border-top: 1px solid #eee; }
-        .nav-btn { flex: 1; text-align: center; cursor: pointer; color: var(--primary); font-size: 12px; font-weight: bold; }
+        .tab-content { display: none; padding-top: 20px; }
+        .nav { display: flex; justify-content: space-around; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
     </style>
 </head>
 <body>
@@ -22,12 +21,17 @@
     <input type="email" id="email" placeholder="Email">
     <input type="password" id="pass" placeholder="Password">
     <button id="mainBtn" onclick="auth()">MASUK</button>
-    <p style="text-align:center; font-size:14px; margin-top:15px; cursor:pointer;" onclick="swap()">Tukar Daftar/Login</p>
-    <p style="text-align:center; font-size:12px; color:red; cursor:pointer;" onclick="resetPass()">Lupa Password?</p>
+    <p style="text-align:center; margin-top:15px; cursor:pointer;" onclick="swap()">Tukar Daftar/Login</p>
+    <p style="text-align:center; color:red; cursor:pointer;" onclick="resetPass()">Lupa Password?</p>
 </div>
 
 <div id="dashPage" class="page" style="display:none;">
     <h2 style="text-align:center;">Dashboard</h2>
+    <div class="nav">
+        <span onclick="tab('k')" style="cursor:pointer; font-weight:bold;">INFO</span>
+        <span onclick="tab('s')" style="cursor:pointer; font-weight:bold;">REKOD</span>
+    </div>
+    
     <div style="background:#f0fdf4; padding:20px; border-radius:15px; text-align:center;">
         <h3>Jumlah Terkumpul</h3>
         <h1 id="total" style="color:var(--primary);">RM 0</h1>
@@ -42,16 +46,13 @@
     <div id="s" class="tab-content">
         <h3>Sejarah Bayaran</h3>
         <pre id="history" style="font-size:12px;"></pre>
-    </div>
-
-    <div class="nav-bar">
-        <div class="nav-btn" onclick="tab('k')">INFO</div>
-        <div class="nav-btn" onclick="tab('s')">REKOD</div>
+        <input type="number" id="amt" placeholder="Jumlah Bayaran (RM)">
+        <button onclick="submitBayar()" style="background:orange;">+ Tambah Rekod Bayaran</button>
     </div>
 </div>
 
 <script>
-    const url = 'https://script.google.com/macros/s/AKfycbxi44QuWqoJNtVDZ725PZi3ysBfh3pbGpI6bB4ugokuMq2vHaPerZeN3T3A0_eUMf8IWA/exec';
+    const url = 'https://script.google.com/macros/s/AKfycbyx-cV9Oub35Ivfa4mF0TGXXIzP_74eqQpvDYf-1nQ53kP8MeBp6whtfLiLpFlCcmkUPw/exec';
     let isLogin = true;
 
     function swap() {
@@ -64,22 +65,34 @@
         const btn = document.getElementById('mainBtn');
         btn.innerText = "Sila tunggu...";
         let e = document.getElementById('email').value, p = document.getElementById('pass').value;
-        fetch(`${url}?action=${isLogin?'login':'register'}&email=${e}&password=${p}`, {method:'POST'})
+        fetch(url, {method:'POST', body:new URLSearchParams({action:isLogin?'login':'register', email:e, password:p})})
         .then(r=>r.text()).then(d=>{
             btn.innerText = isLogin ? "MASUK" : "DAFTAR";
             if(d.trim() == "Login Berjaya") {
                 document.getElementById('authPage').style.display='none';
                 document.getElementById('dashPage').style.display='block';
-                fetch(`${url}?action=getSummary&email=${e}`).then(r=>r.text()).then(t=>document.getElementById('total').innerText="RM "+t);
-                fetch(`${url}?action=getHistory&email=${e}`).then(r=>r.text()).then(t=>document.getElementById('history').innerText=t);
-            } else { alert(d); }
+                loadData(e);
+            } else alert(d);
         });
+    }
+
+    function loadData(e) {
+        fetch(url, {method:'POST', body:new URLSearchParams({action:'getData', email:e})})
+        .then(r=>r.json()).then(d=>{
+            document.getElementById('total').innerText="RM "+d.total;
+            document.getElementById('history').innerText=d.history;
+        });
+    }
+
+    function submitBayar() {
+        let e = document.getElementById('email').value, a = document.getElementById('amt').value;
+        fetch(url, {method:'POST', body:new URLSearchParams({action:'bayar', email:e, amt:a})})
+        .then(r=>r.text()).then(d=>{ alert(d); location.reload(); });
     }
 
     function resetPass() {
         let e = document.getElementById('email').value;
-        if(!e) { alert("Masukkan email!"); return; }
-        fetch(`${url}?action=reset&email=${e}`, {method:'POST'}).then(r=>r.text()).then(d=>alert(d));
+        fetch(url, {method:'POST', body:new URLSearchParams({action:'reset', email:e})}).then(r=>r.text()).then(d=>alert(d));
     }
 
     function tab(id) {
