@@ -5,45 +5,42 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KorbanSmart 2027</title>
     <style>
-        :root { --p: #059669; }
         body { font-family: sans-serif; background: #f8fafc; padding: 20px; }
         .page { max-width: 400px; margin: auto; padding: 20px; background: white; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; background: var(--p); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        button { width: 100%; padding: 12px; background: #059669; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div id="authPage" class="page">
-    <h2 style="color:var(--p); text-align:center;">KorbanSmart 2027</h2>
+    <h2 style="text-align:center;">KorbanSmart 2027</h2>
     <input id="email" placeholder="Email"><input type="password" id="pass" placeholder="Password">
     <button onclick="auth('login')">MASUK</button>
     <p onclick="auth('register')" style="text-align:center; color:blue; cursor:pointer;">Daftar Baru</p>
-    <p onclick="resetPass()" style="text-align:center; color:red; cursor:pointer; font-size:12px;">Lupa Password?</p>
 </div>
 
 <div id="dashPage" class="page" style="display:none;">
-    <h3>Info Korban</h3>
-    <p style="background:#e0f2fe; padding:10px; border-radius:8px;">BSN: Surau Al Falah TSCC<br><b>0410041000169514</b></p>
+    <p>BSN: Surau Al Falah TSCC - 0410041000169514</p>
     <hr>
-    <h3>Tambah Rekod Bayaran</h3>
     <input id="bahagian" placeholder="Bilangan Bahagian">
     <input id="jumlah" placeholder="Jumlah Bayaran (RM)">
     <input id="tarikh" type="date">
     <input id="rujukan" placeholder="No Rujukan Bank">
     <input id="resit" placeholder="Link Gambar Resit">
     <button onclick="tambah()" style="background:orange;">HANTAR REKOD</button>
-    <h3>Sejarah Anda:</h3>
     <pre id="history" style="font-size:12px;"></pre>
 </div>
 
 <script>
-    const url = 'https://script.google.com/macros/s/AKfycbx04zUERIiZRJVzgeFF53vR2e1TQo_tZ8soJARil7VB-tV4EfdSqG_GPNtkYMu5KRDUvA/exec';
+    const url = 'https://script.google.com/macros/s/AKfycbzM0Iu3h5-JWWxzfmimiylZmkk7oNY4ZP8csZTnUMTXdVyCcaThfYQjhtlO55_WL0mNvw/exec';
     
     function auth(act) {
-        let e = document.getElementById('email').value, p = document.getElementById('pass').value;
-        fetch(url, {method:'POST', body:new URLSearchParams({action:act, email:e, password:p})})
-        .then(r=>r.text()).then(d=>{
+        let fd = new FormData();
+        fd.append('action', act);
+        fd.append('email', document.getElementById('email').value);
+        fd.append('password', document.getElementById('pass').value);
+        fetch(url, {method:'POST', body:fd}).then(r=>r.text()).then(d=>{
             if(d=="Login Berjaya") {
                 document.getElementById('authPage').style.display='none';
                 document.getElementById('dashPage').style.display='block';
@@ -53,18 +50,23 @@
     }
 
     function tambah() {
-        let p = { action:'bayar', email:document.getElementById('email').value, bahagian:document.getElementById('bahagian').value, jumlah:document.getElementById('jumlah').value, tarikh:document.getElementById('tarikh').value, rujukan:document.getElementById('rujukan').value, resit:document.getElementById('resit').value };
-        fetch(url, {method:'POST', body:new URLSearchParams(p)}).then(r=>r.text()).then(d=>{ alert(d); load(); });
+        let fd = new FormData();
+        fd.append('action', 'bayar');
+        fd.append('email', document.getElementById('email').value);
+        fd.append('bahagian', document.getElementById('bahagian').value);
+        fd.append('jumlah', document.getElementById('jumlah').value);
+        fd.append('tarikh', document.getElementById('tarikh').value);
+        fd.append('rujukan', document.getElementById('rujukan').value);
+        fd.append('resit', document.getElementById('resit').value);
+        
+        fetch(url, {method:'POST', body:fd}).then(r=>r.text()).then(d=>{ alert(d); load(); });
     }
 
     function load() {
-        fetch(url, {method:'POST', body:new URLSearchParams({action:'getData', email:document.getElementById('email').value})})
-        .then(r=>r.json()).then(d=>document.getElementById('history').innerText=d.history);
-    }
-
-    function resetPass() {
-        let e = document.getElementById('email').value;
-        fetch(url, {method:'POST', body:new URLSearchParams({action:'reset', email:e})}).then(r=>r.text()).then(d=>alert(d));
+        let fd = new FormData();
+        fd.append('action', 'getData');
+        fd.append('email', document.getElementById('email').value);
+        fetch(url, {method:'POST', body:fd}).then(r=>r.json()).then(d=>document.getElementById('history').innerText=d.history);
     }
 </script>
 </body>
