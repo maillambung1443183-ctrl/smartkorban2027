@@ -1,65 +1,29 @@
 <!DOCTYPE html>
-<html lang="ms">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pendaftaran Korban 2027</title>
-    <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; background-color: #f4f7f6; margin: 0; }
-        .form-container { width: 100%; max-width: 400px; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-        h2 { text-align: center; color: #333; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; background-color: #28a745; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold; }
-        button:hover { background-color: #218838; }
-    </style>
-</head>
+<html>
+<head><title>KorbanSmart 2027</title></head>
 <body>
+    <div id="authPage">
+        <h2>Daftar/Login</h2>
+        <input id="nama" placeholder="Nama">
+        <input id="email" placeholder="Email">
+        <input type="password" id="pass" placeholder="Password">
+        <button onclick="proses('register')">DAFTAR</button>
+        <button onclick="proses('login')">LOGIN</button>
+    </div>
 
-<div class="form-container">
-    <h2>Daftar Korban 2027</h2>
-    <input id="nama" placeholder="Nama Penuh" required>
-    <input id="email" placeholder="Email Anda" type="email" required>
-    <input id="pass" placeholder="Kata Laluan" type="password" required>
-    <button onclick="prosesDaftar()">DAFTAR SEKARANG</button>
-</div>
+    <script>
+        const url = 'https://script.google.com/macros/s/AKfycbwr_eYXSeMzsJ1B-2bQOP1ovMKUggXZ0-D4V-qwDFzuKw2dfme5eNbUCclz0ASlntwZnA/exec';
 
-<script>
-    function prosesDaftar() {
-        // URL Apps Script anda
-        const url = https://script.google.com/macros/s/AKfycbzdtIVK1yrVtzrvMg1TyTkZMmIVBzl7Vegh3zstkeo70eFKYN9xlZFIsR1oHrnY628/exec
-        
-        // Ambil nilai dari input
-        let nama = document.getElementById('nama').value;
-        let email = document.getElementById('email').value;
-        let pass = document.getElementById('pass').value;
-
-        if(!nama || !email || !pass) {
-            alert('Sila isi semua ruangan!');
-            return;
+        function proses(act) {
+            let fd = new FormData();
+            fd.append('action', act);
+            fd.append('nama', document.getElementById('nama').value);
+            fd.append('email', document.getElementById('email').value);
+            fd.append('password', document.getElementById('pass').value);
+            
+            fetch(url, {method: 'POST', mode: 'no-cors', body: fd})
+            .then(() => alert('Permintaan dihantar! Sila semak Sheet.'));
         }
-
-        let fd = new FormData();
-        fd.append('action', 'register');
-        fd.append('nama', nama);
-        fd.append('email', email);
-        fd.append('password', pass);
-        
-        alert('Sedang menghantar maklumat, sila tunggu...');
-
-        // Hantar data ke Google Apps Script
-        fetch(url, {method: 'POST', mode: 'no-cors', body: fd})
-        .then(() => {
-            alert('Terima kasih! Pendaftaran telah berjaya dihantar.');
-            // Kosongkan borang selepas berjaya
-            document.getElementById('nama').value = '';
-            document.getElementById('email').value = '';
-            document.getElementById('pass').value = '';
-        })
-        .catch(err => {
-            alert('Ralat berlaku, sila cuba lagi: ' + err);
-        });
-    }
-</script>
-
+    </script>
 </body>
 </html>
