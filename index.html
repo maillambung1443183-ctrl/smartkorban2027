@@ -5,99 +5,66 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KorbanSmart 2027</title>
     <style>
-        :root { --primary: #059669; }
-        body { font-family: 'Segoe UI', sans-serif; background: #f8fafc; padding: 20px; }
-        .page { max-width: 400px; margin: 40px auto; padding: 25px; background: white; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
-        input { width: 100%; padding: 15px; margin: 10px 0; border: 2px solid #e2e8f0; border-radius: 12px; box-sizing: border-box; }
-        button { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; }
-        .tab-content { display: none; padding-top: 20px; }
-        .nav { display: flex; justify-content: space-around; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        :root { --p: #059669; }
+        body { font-family: sans-serif; background: #f8fafc; padding: 20px; }
+        .page { max-width: 400px; margin: auto; padding: 20px; background: white; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: var(--p); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div id="authPage" class="page">
-    <h2 id="title" style="color:var(--primary); text-align:center;">KorbanSmart 2027</h2>
-    <input type="email" id="email" placeholder="Email">
-    <input type="password" id="pass" placeholder="Password">
-    <button id="mainBtn" onclick="auth()">MASUK</button>
-    <p style="text-align:center; margin-top:15px; cursor:pointer;" onclick="swap()">Tukar Daftar/Login</p>
-    <p style="text-align:center; color:red; cursor:pointer;" onclick="resetPass()">Lupa Password?</p>
+    <h2 style="color:var(--p); text-align:center;">KorbanSmart 2027</h2>
+    <input id="email" placeholder="Email"><input type="password" id="pass" placeholder="Password">
+    <button onclick="auth('login')">MASUK</button>
+    <p onclick="auth('register')" style="text-align:center; color:blue; cursor:pointer;">Daftar Baru</p>
+    <p onclick="resetPass()" style="text-align:center; color:red; cursor:pointer; font-size:12px;">Lupa Password?</p>
 </div>
 
 <div id="dashPage" class="page" style="display:none;">
-    <h2 style="text-align:center;">Dashboard</h2>
-    <div class="nav">
-        <span onclick="tab('k')" style="cursor:pointer; font-weight:bold;">INFO</span>
-        <span onclick="tab('s')" style="cursor:pointer; font-weight:bold;">REKOD</span>
-    </div>
-    
-    <div style="background:#f0fdf4; padding:20px; border-radius:15px; text-align:center;">
-        <h3>Jumlah Terkumpul</h3>
-        <h1 id="total" style="color:var(--primary);">RM 0</h1>
-    </div>
-
-    <div id="k" class="tab-content" style="display:block;">
-        <h3>Info Korban</h3>
-        <p>Harga: <b>RM 800</b> (1 bahagian). Ansuran diterima.</p>
-        <p style="background:#e0f2fe; padding:10px; border-radius:8px;">BSN: Surau Al Falah TSCC<br><b>0410041000169514</b></p>
-    </div>
-
-    <div id="s" class="tab-content">
-        <h3>Sejarah Bayaran</h3>
-        <pre id="history" style="font-size:12px;"></pre>
-        <input type="number" id="amt" placeholder="Jumlah Bayaran (RM)">
-        <button onclick="submitBayar()" style="background:orange;">+ Tambah Rekod Bayaran</button>
-    </div>
+    <h3>Info Korban</h3>
+    <p style="background:#e0f2fe; padding:10px; border-radius:8px;">BSN: Surau Al Falah TSCC<br><b>0410041000169514</b></p>
+    <hr>
+    <h3>Tambah Rekod Bayaran</h3>
+    <input id="bahagian" placeholder="Bilangan Bahagian">
+    <input id="jumlah" placeholder="Jumlah Bayaran (RM)">
+    <input id="tarikh" type="date">
+    <input id="rujukan" placeholder="No Rujukan Bank">
+    <input id="resit" placeholder="Link Gambar Resit">
+    <button onclick="tambah()" style="background:orange;">HANTAR REKOD</button>
+    <h3>Sejarah Anda:</h3>
+    <pre id="history" style="font-size:12px;"></pre>
 </div>
 
 <script>
-    const url = 'https://script.google.com/macros/s/AKfycbyx-cV9Oub35Ivfa4mF0TGXXIzP_74eqQpvDYf-1nQ53kP8MeBp6whtfLiLpFlCcmkUPw/exec';
-    let isLogin = true;
-
-    function swap() {
-        isLogin = !isLogin;
-        document.getElementById('title').innerText = isLogin ? "KorbanSmart 2027" : "Daftar Akaun";
-        document.getElementById('mainBtn').innerText = isLogin ? "MASUK" : "DAFTAR";
-    }
-
-    function auth() {
-        const btn = document.getElementById('mainBtn');
-        btn.innerText = "Sila tunggu...";
+    const url = 'https://script.google.com/macros/s/AKfycbx04zUERIiZRJVzgeFF53vR2e1TQo_tZ8soJARil7VB-tV4EfdSqG_GPNtkYMu5KRDUvA/exec';
+    
+    function auth(act) {
         let e = document.getElementById('email').value, p = document.getElementById('pass').value;
-        fetch(url, {method:'POST', body:new URLSearchParams({action:isLogin?'login':'register', email:e, password:p})})
+        fetch(url, {method:'POST', body:new URLSearchParams({action:act, email:e, password:p})})
         .then(r=>r.text()).then(d=>{
-            btn.innerText = isLogin ? "MASUK" : "DAFTAR";
-            if(d.trim() == "Login Berjaya") {
+            if(d=="Login Berjaya") {
                 document.getElementById('authPage').style.display='none';
                 document.getElementById('dashPage').style.display='block';
-                loadData(e);
+                load();
             } else alert(d);
         });
     }
 
-    function loadData(e) {
-        fetch(url, {method:'POST', body:new URLSearchParams({action:'getData', email:e})})
-        .then(r=>r.json()).then(d=>{
-            document.getElementById('total').innerText="RM "+d.total;
-            document.getElementById('history').innerText=d.history;
-        });
+    function tambah() {
+        let p = { action:'bayar', email:document.getElementById('email').value, bahagian:document.getElementById('bahagian').value, jumlah:document.getElementById('jumlah').value, tarikh:document.getElementById('tarikh').value, rujukan:document.getElementById('rujukan').value, resit:document.getElementById('resit').value };
+        fetch(url, {method:'POST', body:new URLSearchParams(p)}).then(r=>r.text()).then(d=>{ alert(d); load(); });
     }
 
-    function submitBayar() {
-        let e = document.getElementById('email').value, a = document.getElementById('amt').value;
-        fetch(url, {method:'POST', body:new URLSearchParams({action:'bayar', email:e, amt:a})})
-        .then(r=>r.text()).then(d=>{ alert(d); location.reload(); });
+    function load() {
+        fetch(url, {method:'POST', body:new URLSearchParams({action:'getData', email:document.getElementById('email').value})})
+        .then(r=>r.json()).then(d=>document.getElementById('history').innerText=d.history);
     }
 
     function resetPass() {
         let e = document.getElementById('email').value;
         fetch(url, {method:'POST', body:new URLSearchParams({action:'reset', email:e})}).then(r=>r.text()).then(d=>alert(d));
-    }
-
-    function tab(id) {
-        document.querySelectorAll('.tab-content').forEach(e=>e.style.display='none');
-        document.getElementById(id).style.display='block';
     }
 </script>
 </body>
