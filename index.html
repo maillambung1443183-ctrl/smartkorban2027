@@ -5,14 +5,48 @@
 </head>
 <body>
 
+<div id="authPage">
+    <h2>KorbanSmart 2027</h2>
+    <input id="email" placeholder="Email">
+    <input type="password" id="pass" placeholder="Password">
     <button onclick="auth('login')">MASUK</button>
+</div>
 
-    <script>
-        // Pastikan fungsi 'auth' ditulis di dalam sini
-        function auth(act) {
-            alert("Fungsi auth berjaya dipanggil!");
-            // ... kod lain anda ...
-        }
-    </script>
+<div id="dashPage" style="display:none;">
+    <h3>Tambah Rekod Bayaran</h3>
+    <input id="bahagian" placeholder="Bilangan Bahagian">
+    <input id="jumlah" placeholder="Jumlah Bayaran">
+    <button onclick="tambah()">HANTAR REKOD</button>
+</div>
+
+<script>
+    const url = 'https://script.google.com/macros/s/AKfycbwr_eYXSeMzsJ1B-2bQOP1ovMKUggXZ0-D4V-qwDFzuKw2dfme5eNbUCclz0ASlntwZnA/exec';
+
+    function auth(act) {
+        alert('Fungsi auth dipanggil');
+        let fd = new FormData();
+        fd.append('action', act);
+        fd.append('email', document.getElementById('email').value);
+        fd.append('password', document.getElementById('pass').value);
+        
+        fetch(url, {method: 'POST', mode: 'no-cors', body: fd})
+        .then(() => {
+            document.getElementById('authPage').style.display = 'none';
+            document.getElementById('dashPage').style.display = 'block';
+        });
+    }
+
+    function tambah() {
+        alert('Fungsi tambah dipanggil');
+        let fd = new FormData();
+        fd.append('action', 'bayar');
+        fd.append('email', document.getElementById('email').value);
+        fd.append('bahagian', document.getElementById('bahagian').value);
+        
+        fetch(url, {method: 'POST', mode: 'no-cors', body: fd})
+        .then(() => { alert('Rekod dihantar!'); location.reload(); });
+    }
+</script>
+
 </body>
 </html>
