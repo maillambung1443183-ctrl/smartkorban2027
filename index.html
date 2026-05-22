@@ -5,44 +5,52 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KorbanSmart 2027</title>
     <style>
-        body { font-family: sans-serif; padding: 20px; background: #f4f4f9; display: flex; justify-content: center; }
-        .page { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
-        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; background: #10b981; color: white; border: none; border-radius: 6px; cursor: pointer; margin-top: 10px; }
-        .tab-content { display: none; margin-top: 20px; text-align: center; border-top: 2px solid #eee; padding-top: 15px; }
-        #dashPage { display: none; }
+        :root { --primary: #059669; --bg: #f8fafc; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding-bottom: 80px; }
+        .page { max-width: 400px; margin: 40px auto; padding: 25px; background: white; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        h2 { color: var(--primary); text-align: center; }
+        input { width: 100%; padding: 15px; margin: 10px 0; border: 2px solid #e2e8f0; border-radius: 12px; box-sizing: border-box; }
+        button { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        
+        /* Dashboard Styling */
+        #dashPage { display: none; margin-top: 0; border-radius: 0 0 20px 20px; }
+        .card { background: #f0fdf4; padding: 20px; border-radius: 15px; text-align: center; margin-bottom: 20px; border: 1px solid #dcfce7; }
+        .nav-bar { position: fixed; bottom: 0; width: 100%; max-width: 400px; display: flex; background: white; padding: 15px 0; border-top: 1px solid #eee; }
+        .nav-btn { flex: 1; text-align: center; cursor: pointer; color: var(--primary); font-size: 12px; }
+        .tab-content { display: none; padding: 20px 0; }
     </style>
 </head>
 <body>
 
 <div id="authPage" class="page">
-    <h2 id="title" style="text-align:center;">Login KorbanSmart</h2>
+    <h2 id="title">KorbanSmart 2027</h2>
     <input type="email" id="email" placeholder="Email">
     <input type="password" id="pass" placeholder="Password">
-    <button id="mainBtn" onclick="auth()">Masuk</button>
-    <p style="text-align:center; cursor:pointer; color:blue; margin-top:15px;" onclick="swap()">Tukar ke Daftar/Login</p>
+    <button id="mainBtn" onclick="auth()">MASUK</button>
+    <p style="text-align:center; font-size:14px; margin-top:15px; cursor:pointer;" onclick="swap()">Tukar Daftar/Login</p>
 </div>
 
 <div id="dashPage" class="page">
-    <h2 style="text-align:center;">Dashboard</h2>
-    <button onclick="tab('k')">Kebaikan Korban</button>
-    <button onclick="tab('p')">Hubungi Pengurus</button>
-    <button onclick="tab('s')">Semak Bayaran</button>
+    <h2>Dashboard</h2>
+    <div class="card">
+        <h3>Jumlah Terkumpul</h3>
+        <h1 id="total" style="color:var(--primary);">RM 0</h1>
+    </div>
 
-    <div id="k" class="tab-content">
+    <div id="k" class="tab-content" style="display:block;">
         <h3>Kebaikan Korban</h3>
-        <p>Ibadah korban adalah syiar Islam yang mulia untuk mensucikan harta.</p>
+        <p>Ibadah ini mensucikan jiwa dan mendekatkan diri kepada Allah SWT.</p>
     </div>
 
     <div id="p" class="tab-content">
-        <h3>Pengurus Program</h3>
-        <p>En. Awang Mohd Fauzi<br>
-        <a href="tel:0113333333">011-3333333</a></p>
+        <h3>Hubungi Pengurus</h3>
+        <p>En. Awang Mohd Fauzi<br><b>011-3333333</b></p>
     </div>
 
-    <div id="s" class="tab-content">
-        <h3>Jumlah Terkumpul</h3>
-        <p id="total">RM 0</p>
+    <div class="nav-bar">
+        <div class="nav-btn" onclick="tab('k')">Kebaikan</div>
+        <div class="nav-btn" onclick="tab('p')">Pengurus</div>
+        <div class="nav-btn" onclick="tab('s')">Semak</div>
     </div>
 </div>
 
@@ -52,8 +60,8 @@
 
     function swap() {
         isLogin = !isLogin;
-        document.getElementById('title').innerText = isLogin ? "Login KorbanSmart" : "Daftar Akaun";
-        document.getElementById('mainBtn').innerText = isLogin ? "Masuk" : "Daftar";
+        document.getElementById('title').innerText = isLogin ? "KorbanSmart 2027" : "Daftar Akaun";
+        document.getElementById('mainBtn').innerText = isLogin ? "MASUK" : "DAFTAR";
     }
 
     function auth() {
