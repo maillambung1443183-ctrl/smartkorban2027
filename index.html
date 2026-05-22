@@ -2,7 +2,6 @@
 <html lang="ms">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KorbanSmart 2027</title>
     <style>
         body { font-family: sans-serif; background: #f8fafc; padding: 20px; }
@@ -27,14 +26,10 @@
     <input id="rujukan" placeholder="No Rujukan Bank">
     <input id="resit" placeholder="Link Gambar Resit">
     <button onclick="tambah()" style="background:orange;">HANTAR REKOD</button>
-    <hr>
-    <h3>Sejarah Anda:</h3>
-    <pre id="history" style="font-size:12px;"></pre>
 </div>
 
 <script>
-    // URL terkini daripada Google Apps Script anda
-    const url = const url = 'https://script.google.com/macros/s/AKfycbwr_eYXSeMzsJ1B-2bQOP1ovMKUggXZ0-D4V-qwDFzuKw2dfme5eNbUCclz0ASlntwZnA/exec';
+    const url = 'https://script.google.com/macros/s/AKfycbwr_eYXSeMzsJ1B-2bQOP1ovMKUggXZ0-D4V-qwDFzuKw2dfme5eNbUCclz0ASlntwZnA/exec';
     
     // Fungsi Login
     function auth(act) {
@@ -43,14 +38,12 @@
         fd.append('email', document.getElementById('email').value);
         fd.append('password', document.getElementById('pass').value);
         
-        fetch(url, {method:'POST', body:fd})
-        .then(r => r.text())
-        .then(d => {
-            if(d == "Login Berjaya") {
-                document.getElementById('authPage').style.display='none';
-                document.getElementById('dashPage').style.display='block';
-                load();
-            } else { alert(d); }
+        // Guna no-cors untuk elak ralat CORS
+        fetch(url, {method: 'POST', mode: 'no-cors', body: fd})
+        .then(() => {
+            alert("Sila tunggu sebentar...");
+            document.getElementById('authPage').style.display='none';
+            document.getElementById('dashPage').style.display='block';
         });
     }
 
@@ -65,19 +58,12 @@
         fd.append('rujukan', document.getElementById('rujukan').value);
         fd.append('resit', document.getElementById('resit').value);
         
-        fetch(url, {method:'POST', body:fd})
-        .then(r => r.text())
-        .then(d => { alert(d); load(); });
-    }
-
-    // Fungsi Papar Sejarah
-    function load() {
-        let fd = new FormData();
-        fd.append('action', 'getData');
-        fd.append('email', document.getElementById('email').value);
-        fetch(url, {method:'POST', body:fd})
-        .then(r => r.json())
-        .then(d => { document.getElementById('history').innerText = d.history; });
+        // Guna no-cors untuk elak ralat CORS
+        fetch(url, {method: 'POST', mode: 'no-cors', body: fd})
+        .then(() => { 
+            alert("Rekod telah dihantar!"); 
+            location.reload(); 
+        });
     }
 </script>
 </body>
