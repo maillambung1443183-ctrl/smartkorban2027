@@ -2,80 +2,73 @@
 <html lang="ms">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KorbanSmart 2027</title>
     <style>
         body { font-family: sans-serif; background: #f8fafc; padding: 20px; }
         .page { max-width: 400px; margin: auto; padding: 20px; background: white; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; }
         button { width: 100%; padding: 12px; background: #059669; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        h2, h3 { text-align: center; }
     </style>
 </head>
 <body>
 
 <div id="authPage" class="page">
-    <h2 style="text-align:center;">KorbanSmart 2027</h2>
+    <h2>KorbanSmart 2027</h2>
     <input id="email" placeholder="Email">
-    <input id="nama" placeholder="Nama Penuh">
-    <input id="tel" placeholder="No Tel">
-    <input type="number" id="bahagian" placeholder="Jumlah Bahagian">
     <input type="password" id="pass" placeholder="Password">
-    <button onclick="auth('register')">DAFTAR BARU</button>
-    <button onclick="auth('login')" style="background:gray; margin-top:10px;">LOG MASUK</button>
+    <button onclick="auth('login')">MASUK</button>
 </div>
 
 <div id="dashPage" class="page" style="display:none;">
     <h3>Tambah Rekod Bayaran</h3>
-    <input id="amt_bahagian" placeholder="Bilangan Bahagian">
+    <input id="bahagian" placeholder="Bilangan Bahagian">
     <input id="jumlah" placeholder="Jumlah Bayaran (RM)">
     <input id="tarikh" type="date">
     <input id="rujukan" placeholder="No Rujukan Bank">
     <input id="resit" placeholder="Link Gambar Resit">
     <button onclick="tambah()" style="background:orange;">HANTAR REKOD</button>
-    <pre id="history" style="font-size:12px;"></pre>
+    <hr>
+    <h3>Sejarah Anda:</h3>
+    <pre id="history"></pre>
 </div>
 
 <script>
-    const url = 'https://script.google.com/macros/s/AKfycbyHAYY8k_p4xOm86l_nai4o21EjTzvG1ZM9qupEFELDuSkLlFjW1MgkscEXGtfh6b-x5A/exec';
-    
+    // URL Web App anda yang terkini
+    const url = 'https://script.google.com/macros/s/AKfycbwoxEuFc7Wq33iVyGmvpUYtN5X9GzMNiXAT_J40dUHFMYFl8Ib_fQuV04mdHJCH2mGaAQ/exec';
+
     function auth(act) {
-        alert("Sila tunggu, sedang memproses...");
         let fd = new FormData();
         fd.append('action', act);
         fd.append('email', document.getElementById('email').value);
         fd.append('password', document.getElementById('pass').value);
-        if(act == 'register') {
-            fd.append('nama', document.getElementById('nama').value);
-            fd.append('tel', document.getElementById('tel').value);
-            fd.append('bahagian', document.getElementById('bahagian').value);
-        }
-        fetch(url, {method:'POST', body:fd}).then(r=>r.text()).then(d=>{
-            alert(d);
-            if(d=="Login Berjaya") {
-                document.getElementById('authPage').style.display='none';
-                document.getElementById('dashPage').style.display='block';
-                load();
-            }
-        });
+        
+        fetch(url, {method: 'POST', mode: 'no-cors', body: fd})
+        .then(() => {
+            alert("Sila tunggu sebentar...");
+            document.getElementById('authPage').style.display='none';
+            document.getElementById('dashPage').style.display='block';
+        })
+        .catch(err => alert("Ralat sambungan: " + err));
     }
 
     function tambah() {
-        alert("Sila tunggu, sedang menghantar rekod...");
         let fd = new FormData();
         fd.append('action', 'bayar');
         fd.append('email', document.getElementById('email').value);
-        fd.append('bahagian', document.getElementById('amt_bahagian').value);
+        fd.append('bahagian', document.getElementById('bahagian').value);
         fd.append('jumlah', document.getElementById('jumlah').value);
         fd.append('tarikh', document.getElementById('tarikh').value);
         fd.append('rujukan', document.getElementById('rujukan').value);
         fd.append('resit', document.getElementById('resit').value);
-        fetch(url, {method:'POST', body:fd}).then(r=>r.text()).then(d=>{ alert(d); load(); });
-    }
-
-    function load() {
-        let fd = new FormData();
-        fd.append('action', 'getData');
-        fd.append('email', document.getElementById('email').value);
-        fetch(url, {method:'POST', body:fd}).then(r=>r.json()).then(d=>document.getElementById('history').innerText=d.history);
+        
+        fetch(url, {method: 'POST', mode: 'no-cors', body: fd})
+        .then(() => {
+            alert("Data berjaya dihantar!");
+            location.reload(); 
+        })
+        .catch(err => alert("Ralat penghantaran: " + err));
     }
 </script>
 </body>
