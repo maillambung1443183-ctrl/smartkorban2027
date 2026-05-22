@@ -5,45 +5,25 @@
 </head>
 <body>
 
-<div id="authPage">
-    <h2>KorbanSmart 2027</h2>
+    <input id="nama" placeholder="Nama">
     <input id="email" placeholder="Email">
     <input type="password" id="pass" placeholder="Password">
-    <button onclick="auth('login')">MASUK</button>
-</div>
+    <button onclick="daftar()">DAFTAR</button>
 
-<div id="dashPage" style="display:none;">
-    <h3>Tambah Rekod</h3>
-    <input id="bahagian" placeholder="Bilangan Bahagian">
-    <input id="jumlah" placeholder="Jumlah Bayaran">
-    <button onclick="tambah()">HANTAR REKOD</button>
-</div>
+    <script>
+        // Pastikan kod ini berada di dalam tag <script> seperti ini
+        const url = 'https://script.google.com/macros/s/AKfycbzMgREuHY17c8SFUnUDzBpwkx-YKSHjFqu4d4tkXInD_HaA9b1F7btmTNpGivzpL1I/exec';
 
-<script>
-    const url = const url = 'https://script.google.com/macros/s/AKfycbzMgREuHY17c8SFUnUDzBpwkx-YKSHjFqu4d4tkXInD_HaA9b1F7btmTNpGivzpL1I/exec';
-
-    function auth(act) {
-        let fd = new FormData();
-        fd.append('action', act);
-        fd.append('email', document.getElementById('email').value);
-        fd.append('password', document.getElementById('pass').value);
-        
-        fetch(url, {method: 'POST', mode: 'no-cors', body: fd})
-        .then(() => {
-            document.getElementById('authPage').style.display = 'none';
-            document.getElementById('dashPage').style.display = 'block';
-        });
-    }
-
-    function tambah() {
-        let fd = new FormData();
-        fd.append('action', 'bayar');
-        fd.append('email', document.getElementById('email').value);
-        fd.append('bahagian', document.getElementById('bahagian').value);
-        
-        fetch(url, {method: 'POST', mode: 'no-cors', body: fd})
-        .then(() => { alert('Berjaya!'); location.reload(); });
-    }
-</script>
+        function daftar() {
+            let fd = new FormData();
+            fd.append('action', 'register');
+            fd.append('nama', document.getElementById('nama').value);
+            fd.append('email', document.getElementById('email').value);
+            fd.append('password', document.getElementById('pass').value);
+            
+            fetch(url, {method: 'POST', mode: 'no-cors', body: fd})
+            .then(() => alert('Data telah dihantar!'));
+        }
+    </script>
 </body>
 </html>
