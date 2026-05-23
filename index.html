@@ -13,7 +13,6 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
     import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
 
-    // Gunakan config yang anda berikan tadi
     const firebaseConfig = {
       apiKey: "AIzaSyDqPxa5AkFOI38AJ1mcwDGAgg8UN9JYAb4",
       authDomain: "korbansmart2027.firebaseapp.com",
@@ -38,7 +37,7 @@
           bayaran: 0,
           baki: 0
         });
-        alert("Pendaftaran Berjaya!");
+        alert("Pendaftaran Berjaya disimpan ke Firestore!");
       } catch (e) {
         alert("Error: " + e.message);
       }
