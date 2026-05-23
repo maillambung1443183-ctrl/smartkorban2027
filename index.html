@@ -1,47 +1,86 @@
 <!DOCTYPE html>
-<html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <title>Sistem Korbansmart</title>
+</head>
 <body>
-  <form id="myForm">
-    <input type="text" id="nama" placeholder="Nama Penuh" required>
-    <input type="email" id="email" placeholder="Email" required>
-    <input type="text" id="bahagian" placeholder="Bahagian" required>
-    <input type="password" id="password" placeholder="Password" required>
-    <button type="submit">Daftar</button>
-  </form>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
-    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
+    <h2>Pendaftaran Peserta</h2>
+    <form id="daftarForm">
+        <input type="text" id="nama" placeholder="Nama Penuh" required>
+        <input type="email" id="email" placeholder="Email" required>
+        <input type="text" id="bahagian" placeholder="Bahagian" required>
+        <input type="password" id="password" placeholder="Password" required>
+        <button type="submit">Daftar Sekarang</button>
+    </form>
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyDqPxa5AkFOI38AJ1mcwDGAgg8UN9JYAb4",
-      authDomain: "korbansmart2027.firebaseapp.com",
-      projectId: "korbansmart2027",
-      storageBucket: "korbansmart2027.firebasestorage.app",
-      messagingSenderId: "475740547773",
-      appId: "1:475740547773:web:0372cdb07699062c4aa5d4",
-      measurementId: "G-KW3ML05FC6"
-    };
+    <hr>
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+    <h2>Profil & Baki Anda</h2>
+    <input type="email" id="searchEmail" placeholder="Masukkan Email untuk Semak">
+    <button onclick="semakData()">Semak</button>
+    
+    <div id="profil" style="margin-top:20px; border:1px solid #ccc; padding:10px; display:none;">
+        <p>Nama: <span id="displayNama"></span></p>
+        <p>Bayaran Dibuat: RM <span id="displayBayaran"></span></p>
+        <p>Baki Perlu Dibayar: RM <span id="displayBaki"></span></p>
+    </div>
 
-    document.getElementById('myForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      try {
-        await addDoc(collection(db, "peserta"), {
-          nama: document.getElementById('nama').value,
-          email: document.getElementById('email').value,
-          bahagian: document.getElementById('bahagian').value,
-          password: document.getElementById('password').value,
-          bayaran: 0,
-          baki: 0
+    <!-- Firebase SDK (Version 9+) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
+
+        // Konfigurasi Firebase anda
+        const firebaseConfig = {
+            apiKey: "AIzaSyDqPxa5AkFOI38AJ1mcwDGAgg8UN9JYAb4",
+            authDomain: "korbansmart2027.firebaseapp.com",
+            projectId: "korbansmart2027",
+            storageBucket: "korbansmart2027.firebasestorage.app",
+            messagingSenderId: "475740547773",
+            appId: "1:475740547773:web:0372cdb07699062c4aa5d4",
+            measurementId: "G-KW3ML05FC6"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const HARGA_PENUH = 500; // Harga tetap untuk pengiraan automatik
+
+        // FUNGSI DAFTAR
+        document.getElementById('daftarForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            try {
+                await addDoc(collection(db, "peserta"), {
+                    nama: document.getElementById('nama').value,
+                    email: document.getElementById('email').value,
+                    bahagian: document.getElementById('bahagian').value,
+                    password: document.getElementById('password').value,
+                    bayaran: 0,
+                    baki: HARGA_PENUH // Baki awal adalah harga penuh
+                });
+                alert("Pendaftaran Berjaya!");
+            } catch (e) { alert("Error: " + e.message); }
         });
-        alert("Pendaftaran Berjaya disimpan ke Firestore!");
-      } catch (e) {
-        alert("Error: " + e.message);
-      }
-    });
-  </script>
+
+        // FUNGSI SEMAK & KIRA AUTOMATIK
+        window.semakData = async () => {
+            const email = document.getElementById('searchEmail').value;
+            const q = query(collection(db, "peserta"), where("email", "==", email));
+            const querySnapshot = await getDocs(q);
+
+            if (querySnapshot.empty) { alert("Data tidak dijumpai!"); return; }
+
+            querySnapshot.forEach((doc) => {
+                const data = doc.data();
+                const bakiAutomatik = HARGA_PENUH - data.bayaran;
+
+                document.getElementById('displayNama').innerText = data.nama;
+                document.getElementById('displayBayaran').innerText = data.bayaran;
+                document.getElementById('displayBaki').innerText = bakiAutomatik;
+                document.getElementById('profil').style.display = 'block';
+            });
+        };
+    </script>
 </body>
 </html>
