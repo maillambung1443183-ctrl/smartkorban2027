@@ -1,65 +1,48 @@
 <!DOCTYPE html>
-<html lang="ms">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pendaftaran Korban 2027</title>
-    <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; background-color: #f4f7f6; margin: 0; }
-        .form-container { width: 100%; max-width: 400px; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-        h2 { text-align: center; color: #333; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; background-color: #28a745; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold; }
-        button:hover { background-color: #218838; }
-    </style>
-</head>
+<html>
 <body>
+  <form id="myForm">
+    <input type="text" id="nama" placeholder="Nama Penuh" required>
+    <input type="email" id="email" placeholder="Email" required>
+    <input type="text" id="bahagian" placeholder="Bahagian" required>
+    <input type="password" id="password" placeholder="Password" required>
+    <button type="submit">Daftar</button>
+  </form>
 
-<div class="form-container">
-    <h2>Daftar Korban 2027</h2>
-    <input id="nama" placeholder="Nama Penuh" required>
-    <input id="email" placeholder="Email Anda" type="email" required>
-    <input id="pass" placeholder="Kata Laluan" type="password" required>
-    <button onclick="prosesDaftar()">DAFTAR SEKARANG</button>
-</div>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
+    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
 
-<script>
-    function prosesDaftar() {
-        // URL Apps Script anda
-        const url = const url = "https://script.google.com/macros/s/AKfycbyO3HVpgHB9Ar-Fzc6dgw_5SGkSJbdF8i5y_yUn4CTFdTgY3CbSy-HJxTiM766-jmQ/exec";
-        
-        // Ambil nilai dari input
-        let nama = document.getElementById('nama').value;
-        let email = document.getElementById('email').value;
-        let pass = document.getElementById('pass').value;
+    // Gunakan config yang anda berikan tadi
+    const firebaseConfig = {
+      apiKey: "AIzaSyDqPxa5AkFOI38AJ1mcwDGAgg8UN9JYAb4",
+      authDomain: "korbansmart2027.firebaseapp.com",
+      projectId: "korbansmart2027",
+      storageBucket: "korbansmart2027.firebasestorage.app",
+      messagingSenderId: "475740547773",
+      appId: "1:475740547773:web:0372cdb07699062c4aa5d4",
+      measurementId: "G-KW3ML05FC6"
+    };
 
-        if(!nama || !email || !pass) {
-            alert('Sila isi semua ruangan!');
-            return;
-        }
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
-        let fd = new FormData();
-        fd.append('action', 'register');
-        fd.append('nama', nama);
-        fd.append('email', email);
-        fd.append('password', pass);
-        
-        alert('Sedang menghantar maklumat, sila tunggu...');
-
-        // Hantar data ke Google Apps Script
-        fetch(url, {method: 'POST', mode: 'no-cors', body: fd})
-        .then(() => {
-            alert('Terima kasih! Pendaftaran telah berjaya dihantar.');
-            // Kosongkan borang selepas berjaya
-            document.getElementById('nama').value = '';
-            document.getElementById('email').value = '';
-            document.getElementById('pass').value = '';
-        })
-        .catch(err => {
-            alert('Ralat berlaku, sila cuba lagi: ' + err);
+    document.getElementById('myForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      try {
+        await addDoc(collection(db, "peserta"), {
+          nama: document.getElementById('nama').value,
+          email: document.getElementById('email').value,
+          bahagian: document.getElementById('bahagian').value,
+          password: document.getElementById('password').value,
+          bayaran: 0,
+          baki: 0
         });
-    }
-</script>
-
+        alert("Pendaftaran Berjaya!");
+      } catch (e) {
+        alert("Error: " + e.message);
+      }
+    });
+  </script>
 </body>
 </html>
