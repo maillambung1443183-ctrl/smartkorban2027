@@ -6,30 +6,42 @@
 </head>
 <body>
 
-    <h2>Pendaftaran Peserta Korban 2027</h2>
+    <h2>Pendaftaran Peserta</h2>
     <form id="daftarForm">
-        <input type="text" id="nama" placeholder="Nama Penuh" required>
-        <input type="email" id="email" placeholder="Email" required>
-        <input type="text" id="bahagian" placeholder="Bahagian" required>
-        <input type="password" id="password" placeholder="Password" required>
+        <input type="text" id="nama" placeholder="Nama Penuh" required><br>
+        <input type="email" id="email" placeholder="Email" required><br>
+        <input type="text" id="bahagian" placeholder="Bahagian" required><br>
+        <input type="password" id="password" placeholder="Password" required><br>
         <button type="submit">Daftar Sekarang</button>
     </form>
 
     <hr>
 
     <h2>Profil & Baki Anda</h2>
-    <input type="email" id="searchEmail" placeholder="Masukkan Email">
+    <input type="email" id="searchEmail" placeholder="Masukkan Email untuk Semak">
     <button onclick="semakData()">Semak</button>
     
-    <div id="profil" style="margin-top:20px; border:1px solid #ccc; padding:10px; display:none;">
+    <div id="profil" style="margin-top:20px; border:1px solid #ccc; padding:15px; display:none; max-width: 500px;">
+        <h4>Maklumat Pembayaran</h4>
         <p>Nama: <span id="displayNama"></span></p>
-        <p>Jumlah Bayaran: RM <span id="displayBayaran"></span></p>
+        <p>Jumlah Bayaran Terkini: RM <span id="displayBayaran"></span></p>
         <p>Baki Perlu Dibayar: RM <span id="displayBaki"></span></p>
 
+        <div style="background-color: #f9f9f9; padding: 10px; border-radius: 5px; border: 1px dashed #999;">
+            <p><strong>Cara Pembayaran:</strong></p>
+            <p>Sila pindahkan bayaran ke akaun <strong>BSN: 0410041000169514 (Surau Al Falah TSCC)</strong></p>
+            <p><strong>Hantar Resit:</strong></p>
+            <p>Sila WhatsApp resit bayaran kepada Admin: <strong>En. Ismail Bin Ishak (017-7000242)</strong></p>
+            <p><strong>Pertanyaan Program:</strong></p>
+            <p>Hubungi Pengurus Program: <strong>En. Awang Mohd Fauzi (013-3333333)</strong></p>
+        </div>
+        
         <hr>
-        <h4>Kemaskini Bayaran</h4>
-        <input type="number" id="jumlahBayaran" placeholder="Amaun Baru">
-        <button onclick="updateBayaran()">Simpan Bayaran</button>
+        <h4>Rekod Bayaran Anda</h4>
+        <input type="number" id="amaunBaru" placeholder="Amaun Bayaran (RM)"><br>
+        <input type="date" id="tarikhBayaran"><br>
+        <input type="text" id="noResit" placeholder="No. Resit / Rujukan"><br>
+        <button onclick="updateBayaran()" style="margin-top: 10px;">Simpan Rekod Bayaran</button>
     </div>
 
     <script type="module">
@@ -48,7 +60,7 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        const HARGA_PENUH = 800; // Harga 1 bahagian
+        const HARGA_PENUH = 800;
 
         // FUNGSI DAFTAR
         document.getElementById('daftarForm').addEventListener('submit', async (e) => {
@@ -83,19 +95,27 @@
             });
         };
 
-        // FUNGSI KEMASKINI BAYARAN
+        // FUNGSI KEMASKINI
         window.updateBayaran = async () => {
-            const amaunBaru = parseFloat(document.getElementById('jumlahBayaran').value);
+            const amaun = parseFloat(document.getElementById('amaunBaru').value);
+            const tarikh = document.getElementById('tarikhBayaran').value;
+            const resit = document.getElementById('noResit').value;
             const email = document.getElementById('searchEmail').value;
             
+            if(!amaun || !tarikh || !resit) { alert("Sila isi semua maklumat bayaran!"); return; }
+
             const q = query(collection(db, "peserta"), where("email", "==", email));
             const querySnapshot = await getDocs(q);
             
             querySnapshot.forEach(async (d) => {
                 const dataLama = d.data();
-                const totalBayaran = dataLama.bayaran + amaunBaru;
-                await updateDoc(doc(db, "peserta", d.id), { bayaran: totalBayaran });
-                alert("Bayaran berjaya dikemaskini!");
+                const totalBayaran = dataLama.bayaran + amaun;
+                await updateDoc(doc(db, "peserta", d.id), { 
+                    bayaran: totalBayaran,
+                    tarikhTerakhir: tarikh,
+                    noResitTerakhir: resit
+                });
+                alert("Rekod bayaran berjaya disimpan!");
                 semakData(); 
             });
         };
