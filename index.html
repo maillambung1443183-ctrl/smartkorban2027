@@ -2,7 +2,7 @@
 <html lang="ms">
 <head>
     <meta charset="UTF-8">
-    <title>Sistem Korbansmart</title>
+    <title>Sistem Korbansmart 2027</title>
 </head>
 <body>
 
@@ -18,21 +18,24 @@
     <hr>
 
     <h2>Profil & Baki Anda</h2>
-    <input type="email" id="searchEmail" placeholder="Masukkan Email untuk Semak">
+    <input type="email" id="searchEmail" placeholder="Masukkan Email">
     <button onclick="semakData()">Semak</button>
     
     <div id="profil" style="margin-top:20px; border:1px solid #ccc; padding:10px; display:none;">
         <p>Nama: <span id="displayNama"></span></p>
-        <p>Bayaran Dibuat: RM <span id="displayBayaran"></span></p>
+        <p>Jumlah Bayaran: RM <span id="displayBayaran"></span></p>
         <p>Baki Perlu Dibayar: RM <span id="displayBaki"></span></p>
+
+        <hr>
+        <h4>Kemaskini Bayaran</h4>
+        <input type="number" id="jumlahBayaran" placeholder="Amaun Baru">
+        <button onclick="updateBayaran()">Simpan Bayaran</button>
     </div>
 
-    <!-- Firebase SDK (Version 9+) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, query, where, getDocs, updateDoc, doc } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
 
-        // Konfigurasi Firebase anda
         const firebaseConfig = {
             apiKey: "AIzaSyDqPxa5AkFOI38AJ1mcwDGAgg8UN9JYAb4",
             authDomain: "korbansmart2027.firebaseapp.com",
@@ -45,7 +48,7 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        const HARGA_PENUH = 800; // Harga tetap untuk pengiraan automatik
+        const HARGA_PENUH = 800; // Harga 1 bahagian
 
         // FUNGSI DAFTAR
         document.getElementById('daftarForm').addEventListener('submit', async (e) => {
@@ -56,14 +59,13 @@
                     email: document.getElementById('email').value,
                     bahagian: document.getElementById('bahagian').value,
                     password: document.getElementById('password').value,
-                    bayaran: 0,
-                    baki: HARGA_PENUH // Baki awal adalah harga penuh
+                    bayaran: 0
                 });
                 alert("Pendaftaran Berjaya!");
             } catch (e) { alert("Error: " + e.message); }
         });
 
-        // FUNGSI SEMAK & KIRA AUTOMATIK
+        // FUNGSI SEMAK
         window.semakData = async () => {
             const email = document.getElementById('searchEmail').value;
             const q = query(collection(db, "peserta"), where("email", "==", email));
@@ -71,14 +73,30 @@
 
             if (querySnapshot.empty) { alert("Data tidak dijumpai!"); return; }
 
-            querySnapshot.forEach((doc) => {
-                const data = doc.data();
-                const bakiAutomatik = HARGA_PENUH - data.bayaran;
-
+            querySnapshot.forEach((d) => {
+                const data = d.data();
+                const baki = HARGA_PENUH - data.bayaran;
                 document.getElementById('displayNama').innerText = data.nama;
                 document.getElementById('displayBayaran').innerText = data.bayaran;
-                document.getElementById('displayBaki').innerText = bakiAutomatik;
+                document.getElementById('displayBaki').innerText = baki;
                 document.getElementById('profil').style.display = 'block';
+            });
+        };
+
+        // FUNGSI KEMASKINI BAYARAN
+        window.updateBayaran = async () => {
+            const amaunBaru = parseFloat(document.getElementById('jumlahBayaran').value);
+            const email = document.getElementById('searchEmail').value;
+            
+            const q = query(collection(db, "peserta"), where("email", "==", email));
+            const querySnapshot = await getDocs(q);
+            
+            querySnapshot.forEach(async (d) => {
+                const dataLama = d.data();
+                const totalBayaran = dataLama.bayaran + amaunBaru;
+                await updateDoc(doc(db, "peserta", d.id), { bayaran: totalBayaran });
+                alert("Bayaran berjaya dikemaskini!");
+                semakData(); 
             });
         };
     </script>
