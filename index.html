@@ -29,7 +29,6 @@
         <h2>Semak Profil & Baki</h2>
         <input type="email" id="searchEmail" placeholder="Masukkan Email">
         <button onclick="semakData()">Semak Maklumat</button>
-        <!-- Butang Lupa Kata Laluan ditambah di sini[cite: 1] -->
         <button onclick="lupaPassword()" style="background-color: #ffc107; margin-top: 10px; color: black;">Lupa Kata Laluan?</button>
     </div>
     
@@ -44,18 +43,11 @@
             <p><strong>Hantar Resit (WhatsApp):</strong> En. Ismail Bin Ishak (017-7000242)</p>
             <p><strong>Pertanyaan:</strong> En. Awang Mohd Fauzi (013-3333333)</p>
         </div>
-        
-        <h4>Rekod Bayaran Anda</h4>
-        <input type="number" id="amaunBaru" placeholder="Amaun Bayaran (RM)">
-        <input type="date" id="tarikhBayaran">
-        <input type="text" id="noResit" placeholder="No. Resit / Rujukan">
-        <button onclick="updateBayaran()" style="background-color: #007bff;">Simpan Rekod Bayaran</button>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, query, where, getDocs, updateDoc, doc } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
-        // Import Auth untuk fungsi Lupa Kata Laluan[cite: 1]
+        import { getFirestore, collection, addDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
         import { getAuth, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
 
         const firebaseConfig = {
@@ -70,10 +62,9 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        const auth = getAuth(app); // Inisialisasi Auth[cite: 1]
+        const auth = getAuth(app);
         const HARGA_PENUH = 800;
 
-        // Fungsi Lupa Kata Laluan[cite: 1]
         window.lupaPassword = async () => {
             const email = document.getElementById('searchEmail').value;
             if (!email) { alert("Sila masukkan email anda di ruangan 'Semak Profil & Baki' dahulu!"); return; }
@@ -112,30 +103,6 @@
                 document.getElementById('displayBayaran').innerText = data.bayaran;
                 document.getElementById('displayBaki').innerText = baki;
                 document.getElementById('profil').style.display = 'block';
-            });
-        };
-
-        window.updateBayaran = async () => {
-            const amaun = parseFloat(document.getElementById('amaunBaru').value);
-            const tarikh = document.getElementById('tarikhBayaran').value;
-            const resit = document.getElementById('noResit').value;
-            const email = document.getElementById('searchEmail').value;
-            
-            if(!amaun || !tarikh || !resit) { alert("Sila isi semua maklumat bayaran!"); return; }
-
-            const q = query(collection(db, "peserta"), where("email", "==", email));
-            const querySnapshot = await getDocs(q);
-            
-            querySnapshot.forEach(async (d) => {
-                const dataLama = d.data();
-                const totalBayaran = dataLama.bayaran + amaun;
-                await updateDoc(doc(db, "peserta", d.id), { 
-                    bayaran: totalBayaran,
-                    tarikhTerakhir: tarikh,
-                    noResitTerakhir: resit
-                });
-                alert("Rekod bayaran berjaya disimpan!");
-                semakData(); 
             });
         };
     </script>
