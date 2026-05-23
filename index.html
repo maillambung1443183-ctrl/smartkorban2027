@@ -1,157 +1,75 @@
-<!DOCTYPE html>
-<html lang="ms">
-<head>
-    <meta charset="UTF-8">
-    <title>Sistem Korbansmart 2027</title>
-    <style>
-        body { font-family: sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; background-color: #f4f4f9; }
-        .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        input { display: block; width: 100%; margin: 10px 0; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; color: white; border: none; border-radius: 5px; cursor: pointer; margin-top: 10px; font-weight: bold; }
-        .btn-green { background-color: #28a745; }
-        .btn-blue { background-color: #007bff; }
-        .btn-loading { background-color: #6c757d !important; cursor: not-allowed; }
-        .info-box { background: #e9ecef; padding: 15px; border-radius: 5px; border-left: 5px solid #007bff; margin: 15px 0; }
-        .link-lupa { color: blue; text-decoration: underline; cursor: pointer; font-size: 0.9em; margin-top: 10px; }
-    </style>
-</head>
-<body>
+<script type="module">
+    // 1. Import library yang betul (JANGAN tambah library lain)
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, query, where, getDocs, updateDoc, doc } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
+    import { getAuth, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
 
-    <div class="card">
-        <h2>Pendaftaran Peserta</h2>
-        <form id="daftarForm">
-            <input type="text" id="nama" placeholder="Nama Penuh" required>
-            <input type="email" id="email" placeholder="Email" required>
-            <input type="text" id="bahagian" placeholder="Bahagian" required>
-            <input type="password" id="password" placeholder="Password" required>
-            <button type="submit" id="btnDaftar" class="btn-green">Daftar Sekarang</button>
-        </form>
-    </div>
+    // 2. Konfigurasi
+    const firebaseConfig = {
+        apiKey: "AIzaSyDqPxa5AkFOI38AJ1mcwDGAgg8UN9JYAb4",
+        authDomain: "korbansmart2027.firebaseapp.com",
+        projectId: "korbansmart2027",
+        storageBucket: "korbansmart2027.firebasestorage.app",
+        messagingSenderId: "475740547773",
+        appId: "1:475740547773:web:0372cdb07699062c4aa5d4",
+        measurementId: "G-KW3ML05FC6"
+    };
 
-    <div class="card">
-        <h2>Semak Profil & Baki</h2>
-        <input type="email" id="searchEmail" placeholder="Masukkan Email">
-        <button onclick="window.semakData()" class="btn-blue">Semak Maklumat</button>
-        <p class="link-lupa" onclick="window.lupaPassword()">Lupa kata laluan?</p>
-    </div>
-    
-    <div id="profil" class="card" style="display:none;">
-        <h3>Maklumat Pembayaran</h3>
-        <p><strong>Nama:</strong> <span id="displayNama"></span></p>
-        <p><strong>Jumlah Bayaran:</strong> RM <span id="displayBayaran"></span></p>
-        <p><strong>Baki Perlu Dibayar:</strong> RM <span id="displayBaki"></span></p>
+    // 3. Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+    const HARGA_PENUH = 800;
 
-        <div class="info-box">
-            <p><strong>Cara Pembayaran:</strong> BSN 0410041000169514 (Surau Al Falah TSCC)</p>
-            <p><strong>Hantar Resit:</strong> WhatsApp En. Ismail (017-7000242)</p>
-            <p><strong>Pertanyaan:</strong> En. Awang Mohd Fauzi (013-3333333)</p>
-        </div>
+    // 4. Pastikan fungsi boleh diakses oleh HTML (Gunakan 'window.')
+    window.semakData = async () => {
+        const email = document.getElementById('searchEmail').value;
+        if(!email) { alert("Masukkan email"); return; }
         
-        <h4>Rekod Bayaran Anda</h4>
-        <input type="number" id="amaunBaru" placeholder="Amaun Bayaran (RM)">
-        <input type="date" id="tarikhBayaran">
-        <input type="text" id="noResit" placeholder="No. Resit / Rujukan">
-        <button id="btnUpdate" onclick="window.updateBayaran()" class="btn-blue">Simpan Rekod Bayaran</button>
-    </div>
+        const q = query(collection(db, "peserta"), where("email", "==", email));
+        const querySnapshot = await getDocs(q);
+        
+        if (querySnapshot.empty) { alert("Data tidak dijumpai!"); return; }
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, query, where, getDocs, updateDoc, doc } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
-        import { getAuth, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyDqPxa5AkFOI38AJ1mcwDGAgg8UN9JYAb4",
-            authDomain: "korbansmart2027.firebaseapp.com",
-            projectId: "korbansmart2027",
-            storageBucket: "korbansmart2027.firebasestorage.app",
-            messagingSenderId: "475740547773",
-            appId: "1:475740547773:web:0372cdb07699062c4aa5d4",
-            measurementId: "G-KW3ML05FC6"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
-        const HARGA_PENUH = 800;
-
-        // FUNGSI LOADING UI
-        const setLoading = (btnId, isLoading) => {
-            const btn = document.getElementById(btnId);
-            if(isLoading) {
-                btn.innerText = "Sila tunggu...";
-                btn.classList.add('btn-loading');
-                btn.disabled = true;
-            } else {
-                btn.innerText = btnId === 'btnDaftar' ? "Daftar Sekarang" : "Simpan Rekod Bayaran";
-                btn.classList.remove('btn-loading');
-                btn.disabled = false;
-            }
-        };
-
-        // DAFTAR
-        document.getElementById('daftarForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            setLoading('btnDaftar', true);
-            try {
-                await addDoc(collection(db, "peserta"), {
-                    nama: document.getElementById('nama').value,
-                    email: document.getElementById('email').value,
-                    bahagian: document.getElementById('bahagian').value,
-                    password: document.getElementById('password').value,
-                    bayaran: 0
-                });
-                alert("Pendaftaran Berjaya!");
-            } catch (e) { alert("Error: " + e.message); }
-            setLoading('btnDaftar', false);
+        querySnapshot.forEach((d) => {
+            const data = d.data();
+            document.getElementById('displayNama').innerText = data.nama;
+            document.getElementById('displayBayaran').innerText = data.bayaran;
+            document.getElementById('displayBaki').innerText = HARGA_PENUH - data.bayaran;
+            document.getElementById('profil').style.display = 'block';
         });
+    };
 
-        // SEMAK
-        window.semakData = async () => {
-            const email = document.getElementById('searchEmail').value;
-            const q = query(collection(db, "peserta"), where("email", "==", email));
-            const querySnapshot = await getDocs(q);
-            if (querySnapshot.empty) { alert("Data tidak dijumpai!"); return; }
-            querySnapshot.forEach((d) => {
-                const data = d.data();
-                document.getElementById('displayNama').innerText = data.nama;
-                document.getElementById('displayBayaran').innerText = data.bayaran;
-                document.getElementById('displayBaki').innerText = HARGA_PENUH - data.bayaran;
-                document.getElementById('profil').style.display = 'block';
-            });
-        };
+    window.lupaPassword = async () => {
+        const email = document.getElementById('searchEmail').value;
+        if(!email) { alert("Masukkan email dahulu."); return; }
+        try {
+            await sendPasswordResetEmail(auth, email);
+            alert("Pautan set semula kata laluan telah dihantar ke email anda.");
+        } catch (e) { alert(e.message); }
+    };
 
-        // KEMASKINI
-        window.updateBayaran = async () => {
-            const amaun = parseFloat(document.getElementById('amaunBaru').value);
-            const tarikh = document.getElementById('tarikhBayaran').value;
-            const resit = document.getElementById('noResit').value;
-            const email = document.getElementById('searchEmail').value;
-            if(!amaun || !tarikh || !resit) { alert("Sila isi semua maklumat!"); return; }
-            
-            setLoading('btnUpdate', true);
-            const q = query(collection(db, "peserta"), where("email", "==", email));
-            const querySnapshot = await getDocs(q);
-            querySnapshot.forEach(async (d) => {
-                await updateDoc(doc(db, "peserta", d.id), { 
-                    bayaran: d.data().bayaran + amaun,
-                    tarikhTerakhir: tarikh,
-                    noResitTerakhir: resit
-                });
-                alert("Berjaya dikemaskini!");
-                setLoading('btnUpdate', false);
-                window.semakData(); 
-            });
-        };
-
-        // LUPA PASSWORD
-        window.lupaPassword = async () => {
-            const email = document.getElementById('searchEmail').value;
-            if(!email) { alert("Masukkan email dahulu."); return; }
-            try {
-                await sendPasswordResetEmail(auth, email);
-                alert("Pautan set semula kata laluan telah dihantar.");
-            } catch (e) { alert("Error: " + e.message); }
-        };
-    </script>
-</body>
-</html>
+    window.updateBayaran = async () => {
+        const amaun = parseFloat(document.getElementById('amaunBaru').value);
+        const email = document.getElementById('searchEmail').value;
+        const q = query(collection(db, "peserta"), where("email", "==", email));
+        const querySnapshot = await getDocs(q);
+        
+        querySnapshot.forEach(async (d) => {
+            await updateDoc(doc(db, "peserta", d.id), { bayaran: d.data().bayaran + amaun });
+            alert("Berjaya dikemaskini!");
+            window.semakData();
+        });
+    };
+    
+    // Pendaftaran
+    document.getElementById('daftarForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        await addDoc(collection(db, "peserta"), {
+            nama: document.getElementById('nama').value,
+            email: document.getElementById('email').value,
+            bayaran: 0
+        });
+        alert("Daftar berjaya!");
+    });
+</script>
