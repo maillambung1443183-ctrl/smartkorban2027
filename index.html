@@ -4,109 +4,102 @@
     <meta charset="UTF-8">
     <title>KorbanSmart 2027</title>
     <style>
-        body { font-family: sans-serif; display: flex; justify-content: center; padding: 20px; }
-        .box { width: 300px; padding: 20px; border: 1px solid #ddd; border-radius: 10px; text-align: center; }
+        body { font-family: sans-serif; background: #f3f4f6; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .card { background: white; padding: 2rem; border-radius: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); width: 320px; text-align: center; }
+        input { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; margin-top: 8px; border: none; border-radius: 5px; cursor: pointer; color: white; font-weight: bold; }
+        .bg-blue { background: #4f46e5; }
+        .bg-green { background: #059669; }
+        .bg-red { background: #dc2626; }
         .hidden { display: none; }
-        input { width: 100%; margin-bottom: 10px; padding: 8px; }
-        button { width: 100%; padding: 10px; margin-top: 5px; cursor: pointer; }
     </style>
 </head>
 <body>
 
-<div class="box">
-    <h2 id="tajukRahsia" onclick="tambahKetik()" style="cursor: pointer;">KorbanSmart 2027</h2>
+    <div class="card">
+        <h2 id="tajuk" onclick="kiraAdmin()" style="cursor: pointer;">KorbanSmart 2027</h2>
 
-    <div id="loginForm">
-        <input type="email" id="email" placeholder="E-mel">
-        <input type="password" id="password" placeholder="Kata Laluan">
-        <button onclick="logMasuk()">Log Masuk</button>
-        <button onclick="daftarAkaun()">Daftar Akaun Baru</button>
+        <div id="authDiv">
+            <input type="email" id="email" placeholder="E-mel">
+            <input type="password" id="pass" placeholder="Kata Laluan">
+            <button class="bg-blue" onclick="logMasuk()">Log Masuk</button>
+            <button class="bg-green" onclick="daftar()">Daftar</button>
+            <p onclick="lupaPass()" style="cursor: pointer; font-size: 12px; color: blue;">Lupa kata laluan?</p>
+        </div>
+
+        <div id="dashDiv" class="hidden">
+            <h3>Borang Pendaftaran</h3>
+            <input type="text" id="nama" placeholder="Nama Penuh">
+            <button class="bg-green" onclick="hantar()">Daftar Korban</button>
+            <button class="bg-red" onclick="keluar()">Log Keluar</button>
+        </div>
+
+        <button id="btnAdmin" class="hidden" onclick="bukaAdmin()">Panel Admin</button>
     </div>
 
-    <div id="dashboard" class="hidden">
-        <h3>Dashboard Peserta</h3>
-        <p>Anda telah log masuk.</p>
-        <button onclick="logKeluar()">Log Keluar</button>
-    </div>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
 
-    <button id="btnAdmin" class="hidden" onclick="bukaPanelAdmin()">Panel Admin</button>
-    <div id="panelAdmin" class="hidden">
-        <h4>Senarai Peserta:</h4>
-        <ul id="listPeserta"></ul>
-    </div>
-</div>
+        const config = {
+            apiKey: "AIzaSyDqPxa5AkFOI38AJ1mcwDGAgg8UN9JYAb4",
+            authDomain: "korbansmart2027.firebaseapp.com",
+            projectId: "korbansmart2027",
+            storageBucket: "korbansmart2027.firebasestorage.app",
+            appId: "1:475740547773:web:0372cdb07699062c4aa5d4"
+        };
+        
+        const app = initializeApp(config);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
 
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
-    import { getFirestore, doc, getDoc, setDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
+        window.logMasuk = () => signInWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('pass').value).catch(e => alert(e.message));
+        
+        window.daftar = async () => {
+            try {
+                await createUserWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('pass').value);
+                await setDoc(doc(db, "users", document.getElementById('email').value), { isAdmin: false });
+                alert("Berjaya daftar! Sila log masuk.");
+            } catch(e) { alert(e.message); }
+        };
 
-    // --- MASUKKAN CONFIG ANDA DI SINI ---
-    const firebaseConfig = {
-        apiKey: "AIzaSyDqPxa5AkFOI38AJ1mcwDGAgg8UN9JYAb4",
-        authDomain: "korbansmart2027.firebaseapp.com",
-        projectId: "korbansmart2027",
-        storageBucket: "korbansmart2027.firebasestorage.app",
-        appId: "1:475740547773:web:0372cdb07699062c4aa5d4",
-    };
+        window.lupaPass = () => sendPasswordResetEmail(auth, document.getElementById('email').value).then(() => alert("Email set semula dihantar!"));
+        
+        window.keluar = () => signOut(auth).then(() => location.reload());
+        
+        window.hantar = async () => {
+            await addDoc(collection(db, "peserta"), { nama: document.getElementById('nama').value });
+            alert("Pendaftaran Berjaya!");
+            document.getElementById('nama').value = "";
+        };
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-
-    // LOG MASUK
-    window.logMasuk = () => {
-        signInWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('password').value)
-        .catch(e => alert(e.message));
-    };
-
-    // DAFTAR AKAUN
-    window.daftarAkaun = async () => {
-        const email = document.getElementById('email').value;
-        const pass = document.getElementById('password').value;
-        try {
-            await createUserWithEmailAndPassword(auth, email, pass);
-            await setDoc(doc(db, "users", email), { isAdmin: false });
-            alert("Berjaya daftar! Sila log masuk.");
-        } catch (e) { alert(e.message); }
-    };
-
-    // LOG KELUAR
-    window.logKeluar = () => { signOut(auth).then(() => location.reload()); };
-
-    // PANTAU STATUS
-    onAuthStateChanged(auth, (user) => {
-        if (user) {
-            document.getElementById('loginForm').classList.add('hidden');
-            document.getElementById('dashboard').classList.remove('hidden');
-        }
-    });
-
-    // RAHSI ADMIN 5 KALI KETIK
-    let kira = 0;
-    window.tambahKetik = async () => {
-        kira++;
-        if (kira === 5) {
-            const user = auth.currentUser;
-            if (user) {
-                const snap = await getDoc(doc(db, "users", user.email));
-                if (snap.exists() && snap.data().isAdmin) {
-                    document.getElementById('btnAdmin').classList.remove('hidden');
-                    alert("Admin Mode Aktif!");
-                }
+        onAuthStateChanged(auth, (user) => {
+            if(user) {
+                document.getElementById('authDiv').classList.add('hidden');
+                document.getElementById('dashDiv').classList.remove('hidden');
             }
-            kira = 0;
-        }
-    };
+        });
 
-    // BUKA PANEL ADMIN
-    window.bukaPanelAdmin = async () => {
-        document.getElementById('panelAdmin').classList.remove('hidden');
-        const snap = await getDocs(collection(db, "peserta"));
-        let html = "";
-        snap.forEach(d => html += `<li>${d.data().nama}</li>`);
-        document.getElementById('listPeserta').innerHTML = html;
-    };
-</script>
+        let klik = 0;
+        window.kiraAdmin = async () => {
+            klik++;
+            if(klik === 5) {
+                const u = auth.currentUser;
+                if(u) {
+                    const s = await getDoc(doc(db, "users", u.email));
+                    if(s.exists() && s.data().isAdmin) document.getElementById('btnAdmin').classList.remove('hidden');
+                }
+                klik = 0;
+            }
+        };
+
+        window.bukaAdmin = async () => {
+            const snap = await getDocs(collection(db, "peserta"));
+            let list = "Senarai:\n";
+            snap.forEach(d => list += d.data().nama + "\n");
+            alert(list);
+        };
+    </script>
 </body>
 </html>
