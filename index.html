@@ -6,6 +6,8 @@
     <style>
         body { font-family: sans-serif; background: #f3f4f6; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
         .card { background: white; padding: 2rem; border-radius: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); width: 350px; text-align: center; }
+        /* Warna untuk Dashboard */
+        .dash-style { background: linear-gradient(135deg, #e0f2f1, #ffffff); padding: 20px; border-radius: 15px; border: 1px solid #b2dfdb; }
         input, select { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
         button { width: 100%; padding: 10px; margin-top: 8px; border: none; border-radius: 5px; cursor: pointer; color: white; font-weight: bold; }
         .bg-blue { background: #4f46e5; }
@@ -25,9 +27,10 @@
             <input type="password" id="pass" placeholder="Kata Laluan">
             <button class="bg-blue" onclick="logMasuk()">Log Masuk</button>
             <button class="bg-green" onclick="daftar()">Daftar</button>
+            <p onclick="lupaPass()" style="cursor: pointer; font-size: 12px; color: blue; text-decoration: underline;">Lupa kata laluan?</p>
         </div>
 
-        <div id="dashDiv" class="hidden">
+        <div id="dashDiv" class="hidden dash-style">
             <h3>Borang Pendaftaran</h3>
             <input type="text" id="nama" placeholder="Nama Penuh">
             <select id="bahagian">
@@ -55,7 +58,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
 
         const config = {
@@ -78,18 +81,19 @@
                 alert("Berjaya daftar! Sila log masuk.");
             } catch(e) { alert(e.message); }
         };
+        // Fungsi Lupa Password
+        window.lupaPass = () => sendPasswordResetEmail(auth, document.getElementById('email').value).then(() => alert("Pautan set semula kata laluan telah dihantar ke e-mel anda!"));
+        
         window.keluar = () => signOut(auth).then(() => location.reload());
         
         window.hantar = async () => {
-            const data = {
+            await addDoc(collection(db, "peserta"), {
                 nama: document.getElementById('nama').value,
                 bahagian: document.getElementById('bahagian').value,
                 caraBayar: document.getElementById('caraBayar').value,
                 tarikh: new Date().toLocaleDateString()
-            };
-            await addDoc(collection(db, "peserta"), data);
+            });
             alert("Pendaftaran berjaya! Sila hantar resit ke WhatsApp 017-7000242.");
-            document.getElementById('nama').value = "";
         };
 
         onAuthStateChanged(auth, (user) => {
@@ -99,7 +103,6 @@
             }
         });
 
-        // Admin & Panel Admin
         let klik = 0;
         window.kiraAdmin = async () => {
             klik++;
