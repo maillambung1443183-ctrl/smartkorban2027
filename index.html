@@ -2,78 +2,88 @@
 <html lang="ms">
 <head>
     <meta charset="UTF-8">
-    <title>Sistem Korbansmart2027</title>
+    <title>Sistem KorbanSmart 2027</title>
     <style>
-        body { font-family: sans-serif; display: flex; justify-content: center; padding: 50px; }
-        .container { border: 1px solid #ccc; padding: 20px; width: 300px; border-radius: 8px; }
-        input { width: 100%; margin-bottom: 10px; padding: 8px; box-sizing: border-box; }
-        button { width: 100%; padding: 10px; cursor: pointer; background-color: #007bff; color: white; border: none; margin-top: 5px; }
-        
-        /* Butang Admin disembunyikan secara lalai */
-        #btnUpdate { display: none; background-color: #dc3545; }
+        body { font-family: sans-serif; padding: 20px; }
+        #panelAdmin { display: none; padding: 20px; border: 2px solid #28a745; margin-top: 20px; border-radius: 8px; }
+        #btnUpdate { display: none; margin-top: 10px; padding: 10px; background-color: #28a745; color: white; border: none; cursor: pointer; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h3>Log Masuk KorbanSmart</h3>
-    
-    <input type="email" id="loginEmail" placeholder="E-mel">
-    <input type="password" id="loginPassword" placeholder="Kata Laluan">
-    
-    <button id="btnLogin" onclick="logMasuk()">Log Masuk</button>
-    
-    <button id="btnUpdate" onclick="window.location.href='admin_panel.html'">Panel Admin</button>
-</div>
+    <div id="loginForm">
+        <h3>Log Masuk KorbanSmart</h3>
+        <input type="email" id="loginEmail" placeholder="E-mel"><br><br>
+        <input type="password" id="loginPassword" placeholder="Kata Laluan"><br><br>
+        <button id="btnLogin" onclick="logMasuk()">Log Masuk</button>
+        
+        <button id="btnUpdate" onclick="bukaKemaskini()">Panel Admin (Senarai Peserta)</button>
+    </div>
 
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
-    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
+    <div id="panelAdmin">
+        <h3>Senarai Peserta</h3>
+        <ul id="senaraiPeserta"></ul>
+        <button onclick="document.getElementById('panelAdmin').style.display='none'">Tutup</button>
+    </div>
 
-    // TAMBAHKAN CONFIG ANDA DI SINI
-    const firebaseConfig = {
-        apiKey: "AIzaSyDqPxa5AkFOI38AJ1mcwDGAgg8UN9JYAb4",
-        authDomain: "korbansmart2027.firebaseapp.com",
-        projectId: "korbansmart2027",
-        storageBucket: "korbansmart2027.appspot.com",
-        messagingSenderId: "475740547773",
-        appId: "1:475740547773:web:0372cdb07699062c4aa5d4",
-    };
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
+        import { getFirestore, doc, getDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
+        // GANTIKAN DENGAN KONFIGURASI FIREBASE ANDA
+        const firebaseConfig = {
+            apiKey: "AIzaSyDqPxa5AkFOI38AJ1mcwDGAgg8UN9JYAb4",
+            authDomain: "korbansmart2027.firebaseapp.com",
+            projectId: "korbansmart2027",
+            storageBucket: "korbansmart2027.appspot.com",
+            messagingSenderId: "475740547773",
+            appId: "1:475740547773:web:0372cdb07699062c4aa5d4",
+        };
 
-    // FUNGSI LOG MASUK
-    window.logMasuk = async () => {
-        const email = document.getElementById('loginEmail').value;
-        const password = document.getElementById('loginPassword').value;
-        try {
-            await signInWithEmailAndPassword(auth, email, password);
-            alert("Berjaya log masuk!");
-        } catch (error) {
-            alert("Ralat: " + error.message);
-        }
-    };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
 
-    // SEMAK STATUS ADMIN
-    onAuthStateChanged(auth, async (user) => {
-        const btnUpdate = document.getElementById("btnUpdate");
-        if (user) {
+        // FUNGSI LOG MASUK
+        window.logMasuk = async () => {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
             try {
+                await signInWithEmailAndPassword(auth, email, password);
+                alert("Log masuk berjaya!");
+            } catch (error) { alert("Ralat: " + error.message); }
+        };
+
+        // SEMAK ADMIN
+        onAuthStateChanged(auth, async (user) => {
+            const btnUpdate = document.getElementById("btnUpdate");
+            if (user) {
                 const userDoc = await getDoc(doc(db, "users", user.email));
                 if (userDoc.exists() && userDoc.data().isAdmin === true) {
-                    btnUpdate.style.display = "block"; // Muncul jika admin
+                    btnUpdate.style.display = "block";
                 }
-            } catch (e) {
-                console.error("Gagal semak admin:", e);
+            } else {
+                btnUpdate.style.display = "none";
             }
-        } else {
-            btnUpdate.style.display = "none";
-        }
-    });
-</script>
+        });
 
+        // FUNGSI PAPAR DATA PESERTA
+        window.bukaKemaskini = async () => {
+            const panel = document.getElementById("panelAdmin");
+            const senarai = document.getElementById("senaraiPeserta");
+            panel.style.display = "block";
+            senarai.innerHTML = "Memuatkan data...";
+
+            const querySnapshot = await getDocs(collection(db, "peserta"));
+            senarai.innerHTML = "";
+            querySnapshot.forEach((doc) => {
+                const data = doc.data();
+                const li = document.createElement("li");
+                li.textContent = "Peserta: " + data.nama;
+                senarai.appendChild(li);
+            });
+        };
+    </script>
 </body>
 </html>
