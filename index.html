@@ -24,6 +24,7 @@
             <input type="password" id="pass" placeholder="Kata Laluan">
             <button class="bg-blue" onclick="logMasuk()">Log Masuk</button>
             <button class="bg-green" onclick="daftar()">Daftar</button>
+            <p onclick="lupaPass()" style="cursor: pointer; font-size: 12px; color: blue;">Lupa kata laluan?</p>
         </div>
 
         <div id="dashDiv" class="hidden">
@@ -54,7 +55,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
         import { getFirestore, doc, setDoc, collection, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
 
         const config = { apiKey: "AIzaSyDqPxa5AkFOI38AJ1mcwDGAgg8UN9JYAb4", authDomain: "korbansmart2027.firebaseapp.com", projectId: "korbansmart2027", storageBucket: "korbansmart2027.firebasestorage.app", appId: "1:475740547773:web:0372cdb07699062c4aa5d4" };
@@ -68,6 +69,7 @@
 
         window.daftar = async () => { try { await createUserWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('pass').value); alert("Berjaya!"); } catch(e) { alert(e.message); } };
         window.logKeluarManual = () => { signOut(auth); location.reload(); };
+        window.lupaPass = () => sendPasswordResetEmail(auth, document.getElementById('email').value).then(() => alert("Pautan set semula kata laluan telah dihantar!"));
 
         window.tukarView = (viewId) => {
             document.getElementById('viewBorang').classList.add('hidden');
@@ -76,8 +78,13 @@
         };
 
         window.hantar = async () => {
-            const bayar = parseFloat(document.getElementById('jumlah').value);
             const ref = document.getElementById('rujukan').value;
+            const q = query(collection(db, "peserta"), where("rujukan", "==", ref));
+            const check = await getDocs(q);
+            
+            if (!check.empty) return alert("Error: No rujukan ini sudah digunakan!");
+            
+            const bayar = parseFloat(document.getElementById('jumlah').value);
             await addDoc(collection(db, "peserta"), { 
                 email: auth.currentUser.email,
                 nama: document.getElementById('nama').value,
@@ -97,7 +104,7 @@
             snap.forEach(d => {
                 let data = d.data();
                 html += `<tr><td>${data.tarikh}</td><td>RM${data.jumlah}</td><td>${data.rujukan}</td></tr>`;
-                total += data.jumlah;
+                total += parseFloat(data.jumlah);
             });
             document.getElementById('tableBody').innerHTML = html;
             document.getElementById('bakiText').innerText = (800 - total);
