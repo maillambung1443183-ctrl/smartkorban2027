@@ -18,7 +18,7 @@
     <div class="card">
         <h2 id="tajuk" onclick="kiraAdmin()" style="cursor: pointer;">KorbanSmart 2027</h2>
 
-        <!-- Skrin Login Sentiasa Muncul Dulu -->
+        <!-- Login -->
         <div id="authDiv">
             <input type="email" id="email" placeholder="E-mel">
             <input type="password" id="pass" placeholder="Kata Laluan">
@@ -27,21 +27,28 @@
             <p onclick="lupaPass()" style="cursor: pointer; font-size: 12px; color: blue;">Lupa kata laluan?</p>
         </div>
 
-        <!-- Dashboard -->
+        <!-- Dashboard (Paparan Bertukar) -->
         <div id="dashDiv" class="hidden">
-            <h3>Borang Pendaftaran</h3>
-            <input type="text" id="nama" placeholder="Nama Peserta">
-            <input type="number" id="jumlah" placeholder="Jumlah Bayaran (RM)">
-            <input type="text" id="rujukan" placeholder="No Rujukan Bank">
-            
-            <div class="info">
-                Maybank: <b>551089424735</b> (KRT TAMAN SERI CHINCHIN)<br>
-                Resit WhatsApp: <b>017-7000242</b><br><br>
-                <b>Baki Perlu Dibayar:</b> RM <span id="bakiText">800</span>
+            <!-- Paparan 1: Borang -->
+            <div id="viewBorang">
+                <h3>Borang Pendaftaran</h3>
+                <input type="text" id="nama" placeholder="Nama Peserta">
+                <input type="number" id="jumlah" placeholder="Jumlah Bayaran (RM)">
+                <input type="text" id="rujukan" placeholder="No Rujukan Bank">
+                <button class="bg-green" onclick="hantar()">Hantar & Kira Baki</button>
+                <button class="bg-blue" onclick="tukarView('viewRekod')">Lihat Rekod Bayaran</button>
             </div>
 
-            <button class="bg-green" onclick="hantar()">Daftar & Simpan</button>
-            <button class="bg-red" onclick="logKeluarManual()">Log Keluar</button>
+            <!-- Paparan 2: Rekod -->
+            <div id="viewRekod" class="hidden">
+                <h3>Rekod Bayaran</h3>
+                <div class="info">
+                    <b>Baki Terkini Anda:</b> RM <span id="bakiText">800</span>
+                </div>
+                <button class="bg-blue" onclick="tukarView('viewBorang')">Kembali ke Borang</button>
+            </div>
+
+            <button class="bg-red" style="margin-top:20px;" onclick="logKeluarManual()">Log Keluar</button>
         </div>
 
         <button id="btnAdmin" class="hidden" onclick="bukaAdmin()">Panel Admin</button>
@@ -61,16 +68,19 @@
             .then(() => { document.getElementById('authDiv').classList.add('hidden'); document.getElementById('dashDiv').classList.remove('hidden'); })
             .catch(e => alert(e.message));
 
-        window.daftar = async () => {
-            try { await createUserWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('pass').value); alert("Berjaya daftar!"); } 
-            catch(e) { alert(e.message); }
-        };
-
+        window.daftar = async () => { try { await createUserWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('pass').value); alert("Berjaya daftar!"); } catch(e) { alert(e.message); } };
         window.logKeluarManual = () => { signOut(auth); location.reload(); };
         window.lupaPass = () => sendPasswordResetEmail(auth, document.getElementById('email').value).then(() => alert("Cek email!"));
 
+        window.tukarView = (viewId) => {
+            document.getElementById('viewBorang').classList.add('hidden');
+            document.getElementById('viewRekod').classList.add('hidden');
+            document.getElementById(viewId).classList.remove('hidden');
+        };
+
         window.hantar = async () => {
             const bayar = parseFloat(document.getElementById('jumlah').value);
+            if (!bayar) return alert("Masukkan jumlah bayaran!");
             const baki = 800 - bayar;
             document.getElementById('bakiText').innerText = baki > 0 ? baki : 0;
             
@@ -81,9 +91,9 @@
                 baki: baki
             });
             alert("Berjaya! Baki anda: RM " + (baki > 0 ? baki : 0));
+            tukarView('viewRekod');
         };
 
-        // Admin
         window.kiraAdmin = async () => { /* Logik Admin kekal */ };
         window.bukaAdmin = async () => {
             const snap = await getDocs(collection(db, "peserta"));
