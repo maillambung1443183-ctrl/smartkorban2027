@@ -2,101 +2,83 @@
 <html lang="ms">
 <head>
     <meta charset="UTF-8">
-    <title>Sistem KorbanSmart 2027</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KorbanSmart 2027</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;600&display=swap" rel="stylesheet">
     <style>
-        body { font-family: sans-serif; padding: 20px; }
-        #panelAdmin { display: none; padding: 20px; border: 2px solid #28a745; margin-top: 20px; border-radius: 8px; }
-        #btnUpdate { display: none; margin-top: 10px; padding: 10px; background-color: #28a745; color: white; border: none; cursor: pointer; }
+        body { font-family: 'Poppins', sans-serif; background: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .container { background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 350px; text-align: center; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; margin-top: 10px; transition: 0.3s; }
+        #btnLogin { background: #4a90e2; color: white; }
+        #btnUpdate { background: #27ae60; color: white; display: none; }
+        button:hover { opacity: 0.8; }
+        #panelAdmin { display: none; margin-top: 20px; text-align: left; }
+        li { background: #fff; border-bottom: 1px solid #eee; padding: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .del-btn { background: #e74c3c; color: white; padding: 5px 10px; font-size: 12px; }
     </style>
 </head>
 <body>
 
-    <div id="loginForm">
-        <h3>Log Masuk KorbanSmart</h3>
-        <input type="email" id="loginEmail" placeholder="E-mel"><br><br>
-        <input type="password" id="loginPassword" placeholder="Kata Laluan"><br><br>
-        <button id="btnLogin" onclick="logMasuk()">Log Masuk</button>
-        
-        <button id="btnUpdate" onclick="bukaKemaskini()">Panel Admin (Senarai Peserta)</button>
-    </div>
+<div class="container">
+    <h2>KorbanSmart 2027</h2>
+    <input type="email" id="loginEmail" placeholder="E-mel">
+    <input type="password" id="loginPassword" placeholder="Kata Laluan">
+    <button id="btnLogin" onclick="logMasuk()">Log Masuk</button>
+    <button id="btnUpdate" onclick="bukaKemaskini()">Panel Admin</button>
 
     <div id="panelAdmin">
         <h3>Senarai Peserta</h3>
         <ul id="senaraiPeserta"></ul>
-        <button onclick="document.getElementById('panelAdmin').style.display='none'">Tutup</button>
+        <button onclick="document.getElementById('panelAdmin').style.display='none'" style="background:#7f8c8d; color:white;">Tutup</button>
     </div>
+</div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
-        import { getFirestore, doc, getDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
+    import { getFirestore, doc, getDoc, collection, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
 
-        // GANTIKAN DENGAN KONFIGURASI FIREBASE ANDA
-        const firebaseConfig = {
-            apiKey: "AIzaSyDqPxa5AkFOI38AJ1mcwDGAgg8UN9JYAb4",
-            authDomain: "korbansmart2027.firebaseapp.com",
-            projectId: "korbansmart2027",
-            storageBucket: "korbansmart2027.appspot.com",
-            messagingSenderId: "475740547773",
-            appId: "1:475740547773:web:0372cdb07699062c4aa5d4",
-        };
+    const firebaseConfig = { 
+        "AIzaSyDqPxa5AkFOI38AJ1mcwDGAgg8UN9JYAb4", 
+    };
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
+    window.logMasuk = async () => {
+        try {
+            await signInWithEmailAndPassword(auth, document.getElementById('loginEmail').value, document.getElementById('loginPassword').value);
+            alert("Log masuk berjaya!");
+            location.reload();
+        } catch (e) { alert("Ralat: " + e.message); }
+    };
 
-        // FUNGSI LOG MASUK
-        window.logMasuk = async () => {
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPassword').value;
-            try {
-                await signInWithEmailAndPassword(auth, email, password);
-                alert("Log masuk berjaya!");
-            } catch (error) { alert("Ralat: " + error.message); }
-        };
-
-        // SEMAK ADMIN
-        onAuthStateChanged(auth, async (user) => {
-    const btnUpdate = document.getElementById("btnUpdate");
-    // Sembunyikan butang secara lalai
-    btnUpdate.style.display = "none"; 
-    
-    if (user) {
-        // Hanya jika pengguna login, baru semak koleksi 'users'
-        const userDoc = await getDoc(doc(db, "users", user.email));
-        if (userDoc.exists() && userDoc.data().isAdmin === true) {
-            btnUpdate.style.display = "block"; // Hanya muncul jika admin
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            const userDoc = await getDoc(doc(db, "users", user.email));
+            if (userDoc.exists() && userDoc.data().isAdmin) document.getElementById("btnUpdate").style.display = "block";
         }
-    }
-});
+    });
 
-        // FUNGSI PAPAR DATA PESERTA
-       window.bukaKemaskini = async () => {
-    const panel = document.getElementById("panelAdmin");
-    const senarai = document.getElementById("senaraiPeserta");
-    panel.style.display = "block";
-    senarai.innerHTML = "Memuatkan data...";
-
-    try {
+    window.bukaKemaskini = async () => {
+        const senarai = document.getElementById("senaraiPeserta");
+        document.getElementById("panelAdmin").style.display = "block";
         const querySnapshot = await getDocs(collection(db, "peserta"));
-        senarai.innerHTML = ""; // Kosongkan
-        
-        if (querySnapshot.empty) {
-            senarai.innerHTML = "Tiada peserta dijumpai.";
-        }
-
-        querySnapshot.forEach((doc) => {
-            const data = doc.data();
+        senarai.innerHTML = "";
+        querySnapshot.forEach((docSnap) => {
             const li = document.createElement("li");
-            // Pastikan field di sini SAMA dengan field dalam Firestore (iaitu 'nama')
-            li.textContent = "Peserta: " + (data.nama || "Tiada Nama"); 
+            li.innerHTML = `<span>${docSnap.data().nama}</span> <button class="del-btn" onclick="padamData('${docSnap.id}')">Padam</button>`;
             senarai.appendChild(li);
         });
-    } catch (error) {
-        console.error("Ralat ambil data:", error);
-        senarai.innerHTML = "Gagal memuatkan data.";
-    }
-};
-    </script>
+    };
+
+    window.padamData = async (id) => {
+        if (confirm("Padam peserta ini?")) {
+            await deleteDoc(doc(db, "peserta", id));
+            bukaKemaskini();
+        }
+    };
+</script>
 </body>
 </html>
