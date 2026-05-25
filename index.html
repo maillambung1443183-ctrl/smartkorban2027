@@ -2,103 +2,105 @@
 <html lang="ms">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KorbanSmart 2027</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;600&display=swap" rel="stylesheet">
+    <title>Sistem KorbanSmart 2027</title>
     <style>
-        body { font-family: 'Poppins', sans-serif; background: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .container { background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 350px; text-align: center; }
-        h2 { color: #333; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; margin-top: 10px; transition: 0.3s; }
-        #btnLogin { background: #4a90e2; color: white; }
-        #btnUpdate { background: #27ae60; color: white; display: none; margin-top: 10px; }
-        #panelAdmin { display: none; margin-top: 20px; text-align: left; border-top: 2px solid #eee; pt: 15px; }
-        ul { list-style: none; padding: 0; }
-        li { background: #f9f9f9; border-bottom: 1px solid #eee; padding: 10px; display: flex; justify-content: space-between; align-items: center; border-radius: 5px; margin-bottom: 5px; }
-        .del-btn { background: #e74c3c; color: white; padding: 5px 10px; font-size: 12px; border-radius: 4px; border: none; cursor: pointer; }
+        body { font-family: sans-serif; padding: 20px; text-align: center; }
+        input { padding: 8px; margin: 5px; width: 250px; }
+        button { padding: 10px 20px; cursor: pointer; }
+        #btnUpdate { margin-top: 20px; background-color: #28a745; color: white; border: none; }
+        #panelAdmin { display: none; padding: 20px; border: 2px solid #28a745; margin-top: 20px; text-align: left; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2>KorbanSmart 2027</h2>
-    <input type="email" id="loginEmail" placeholder="E-mel">
-    <input type="password" id="loginPassword" placeholder="Kata Laluan">
-    <button id="btnLogin">Log Masuk</button>
-    <button id="btnUpdate">Panel Admin</button>
+    <h2 id="tajukRahsia" onclick="tambahKetik()" style="cursor: pointer;">KorbanSmart 2027</h2>
+
+    <div id="loginForm">
+        <input type="email" id="loginEmail" placeholder="E-mel"><br>
+        <input type="password" id="loginPassword" placeholder="Kata Laluan"><br>
+        <button id="btnLogin" onclick="logMasuk()">Log Masuk</button>
+        <br><br>
+        <a href="#" onclick="lupaKataLaluan()" style="color: blue; cursor: pointer;">Lupa kata laluan?</a>
+    </div>
+
+    <button id="btnUpdate" style="display: none;" onclick="bukaKemaskini()">Panel Admin (Senarai Peserta)</button>
 
     <div id="panelAdmin">
         <h3>Senarai Peserta</h3>
         <ul id="senaraiPeserta"></ul>
-        <button onclick="document.getElementById('panelAdmin').style.display='none'" style="background:#7f8c8d; color:white;">Tutup</button>
+        <button onclick="document.getElementById('panelAdmin').style.display='none'">Tutup</button>
     </div>
-</div>
 
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
-    import { getFirestore, doc, getDoc, collection, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
+        import { getFirestore, doc, getDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyDqPxa5AkFOI38AJ1mcwDGAgg8UN9JYAb4",
-        authDomain: "korbansmart2027.firebaseapp.com",
-        projectId: "korbansmart2027",
-        storageBucket: "korbansmart2027.firebasestorage.app",
-        messagingSenderId: "475740547773",
-        appId: "1:475740547773:web:0372cdb07699062c4aa5d4",
-        measurementId: "G-KW3ML05FC6"
-    };
+        // GANTIKAN DENGAN KONFIGURASI PROJEK ANDA
+        const firebaseConfig = {
+            apiKey: "AIza...",
+            authDomain: "...",
+            projectId: "...",
+            storageBucket: "...",
+            appId: "..."
+        };
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
 
-    // Fungsi Log Masuk
-    const logMasuk = async () => {
-        try {
-            await signInWithEmailAndPassword(auth, document.getElementById('loginEmail').value, document.getElementById('loginPassword').value);
-            alert("Log masuk berjaya!");
-            location.reload();
-        } catch (e) { alert("Ralat: " + e.message); }
-    };
+        // Fungsi Log Masuk
+        window.logMasuk = async () => {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                alert("Log masuk berjaya!");
+            } catch (error) { alert("Ralat: " + error.message); }
+        };
 
-    // Fungsi Buka Panel Admin
-    const bukaKemaskini = async () => {
-        const senarai = document.getElementById('senaraiPeserta');
-        document.getElementById('panelAdmin').style.display = 'block';
-        senarai.innerHTML = "Memuatkan...";
-        
-        const querySnapshot = await getDocs(collection(db, "peserta"));
-        senarai.innerHTML = "";
-        
-        querySnapshot.forEach((docSnap) => {
-            const li = document.createElement("li");
-            li.innerHTML = `<span>${docSnap.data().nama}</span> 
-                            <button class="del-btn" id="del-${docSnap.id}">Padam</button>`;
-            senarai.appendChild(li);
-            
-            document.getElementById(`del-${docSnap.id}`).addEventListener('click', async () => {
-                if (confirm("Padam peserta ini?")) {
-                    await deleteDoc(doc(db, "peserta", docSnap.id));
-                    bukaKemaskini();
+        // Fungsi Lupa Kata Laluan
+        window.lupaKataLaluan = async () => {
+            const email = document.getElementById('loginEmail').value;
+            if (!email) return alert("Sila masukkan e-mel di ruangan atas.");
+            try {
+                await sendPasswordResetEmail(auth, email);
+                alert("E-mel set semula kata laluan telah dihantar ke " + email);
+            } catch (error) { alert("Ralat: " + error.message); }
+        };
+
+        // Fungsi 5 kali ketik
+        let kiraanKetik = 0;
+        window.tambahKetik = async () => {
+            kiraanKetik++;
+            if (kiraanKetik === 5) {
+                const user = auth.currentUser;
+                if (!user) return alert("Sila log masuk dahulu!");
+                
+                const userDoc = await getDoc(doc(db, "users", user.email));
+                if (userDoc.exists() && userDoc.data().isAdmin === true) {
+                    document.getElementById("btnUpdate").style.display = "block";
+                    alert("Mod Admin Diaktifkan!");
+                } else {
+                    alert("Anda bukan admin.");
                 }
-            });
-        });
-    };
-
-    document.getElementById('btnLogin').addEventListener('click', logMasuk);
-    document.getElementById('btnUpdate').addEventListener('click', bukaKemaskini);
-
-    // Semak Status Admin
-    onAuthStateChanged(auth, async (user) => {
-        if (user) {
-            const userDoc = await getDoc(doc(db, "users", user.email));
-            if (userDoc.exists() && userDoc.data().isAdmin) {
-                document.getElementById("btnUpdate").style.display = "block";
+                kiraanKetik = 0; 
             }
-        }
-    });
-</script>
+        };
+
+        // Fungsi Buka Panel Admin
+        window.bukaKemaskini = async () => {
+            const panel = document.getElementById("panelAdmin");
+            const senarai = document.getElementById("senaraiPeserta");
+            panel.style.display = "block";
+            
+            const querySnapshot = await getDocs(collection(db, "peserta"));
+            senarai.innerHTML = "";
+            querySnapshot.forEach((doc) => {
+                const data = doc.data();
+                senarai.innerHTML += `<li>${data.nama}</li>`;
+            });
+        };
+    </script>
 </body>
 </html>
