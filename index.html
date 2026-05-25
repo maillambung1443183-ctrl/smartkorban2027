@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <title>KorbanSmart 2027</title>
     <style>
-        body { font-family: sans-serif; background: #f3f4f6; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        /* Background body telah ditukar kepada #e0f2f1 */
+        body { font-family: sans-serif; background: #e0f2f1; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
         .card { background: white; padding: 2rem; border-radius: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); width: 350px; text-align: center; }
         input { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
         button { width: 100%; padding: 10px; margin-top: 8px; border: none; border-radius: 5px; cursor: pointer; color: white; font-weight: bold; }
@@ -56,7 +57,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
-        import { getFirestore, doc, setDoc, collection, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, collection, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
 
         const config = { apiKey: "AIzaSyDqPxa5AkFOI38AJ1mcwDGAgg8UN9JYAb4", authDomain: "korbansmart2027.firebaseapp.com", projectId: "korbansmart2027", storageBucket: "korbansmart2027.firebasestorage.app", appId: "1:475740547773:web:0372cdb07699062c4aa5d4" };
         const app = initializeApp(config);
@@ -67,7 +68,7 @@
             .then(() => { document.getElementById('authDiv').classList.add('hidden'); document.getElementById('dashDiv').classList.remove('hidden'); loadRekod(); })
             .catch(e => alert(e.message));
 
-        window.daftar = async () => { try { await createUserWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('pass').value); alert("Berjaya!"); } catch(e) { alert(e.message); } };
+        window.daftar = async () => { try { await createUserWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('pass').value); alert("Berjaya daftar!"); } catch(e) { alert(e.message); } };
         window.logKeluarManual = () => { signOut(auth); location.reload(); };
         window.lupaPass = () => sendPasswordResetEmail(auth, document.getElementById('email').value).then(() => alert("Pautan set semula kata laluan telah dihantar!"));
 
@@ -81,7 +82,6 @@
             const ref = document.getElementById('rujukan').value;
             const q = query(collection(db, "peserta"), where("rujukan", "==", ref));
             const check = await getDocs(q);
-            
             if (!check.empty) return alert("Error: No rujukan ini sudah digunakan!");
             
             const bayar = parseFloat(document.getElementById('jumlah').value);
@@ -109,6 +109,19 @@
             document.getElementById('tableBody').innerHTML = html;
             document.getElementById('bakiText').innerText = (800 - total);
         }
+
+        let klik = 0;
+        window.kiraAdmin = async () => {
+            klik++;
+            if(klik === 5) {
+                const u = auth.currentUser;
+                if(u) {
+                    const s = await getDoc(doc(db, "users", u.email));
+                    if(s.exists() && s.data().isAdmin) document.getElementById('btnAdmin').classList.remove('hidden');
+                }
+                klik = 0;
+            }
+        };
 
         window.bukaAdmin = async () => {
             const snap = await getDocs(collection(db, "peserta"));
