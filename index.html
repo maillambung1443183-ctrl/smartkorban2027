@@ -1,110 +1,54 @@
-<!DOCTYPE html>
-<html lang="ms">
-<head>
-    <meta charset="UTF-8">
-    <title>Sistem Korbansmart 2027</title>
-    <style>
-        body { font-family: sans-serif; line-height: 1.6; max-width: 600px; margin: 20px auto; padding: 20px; background-color: #f4f4f9; }
-        .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        input { display: block; width: 100%; margin: 10px 0; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
-        button { width: 100%; padding: 10px; background-color: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; }
-        button:hover { background-color: #218838; }
-        .info-box { background: #e9ecef; padding: 15px; border-radius: 5px; border-left: 5px solid #007bff; margin: 15px 0; }
-    </style>
-</head>
-<body>
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
+import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
 
-    <div class="card">
-        <h2>Pendaftaran Peserta Korban 2027</h2>
-        <form id="daftarForm">
-            <input type="text" id="nama" placeholder="Nama Penuh" required>
-            <input type="email" id="email" placeholder="Email" required>
-            <input type="text" id="bahagian" placeholder="Bahagian" required>
-            <input type="password" id="password" placeholder="Password" required>
-            <button type="submit">Daftar Sekarang</button>
-        </form>
-    </div>
+// 1. Konfigurasi Firebase (Masukkan kunci anda di sini)
+const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "korbansmart2027.firebaseapp.com",
+    projectId: "korbansmart2027",
+    storageBucket: "korbansmart2027.appspot.com",
+    appId: "YOUR_APP_ID"
+};
 
-    <div class="card">
-        <h2>Semak Profil & Baki</h2>
-        <input type="email" id="searchEmail" placeholder="Masukkan Email">
-        <button onclick="semakData()">Semak Maklumat</button>
-        <button onclick="lupaPassword()" style="background-color: #ffc107; margin-top: 10px; color: black;">Lupa Kata Laluan?</button>
-    </div>
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+// 2. Fungsi Log Masuk
+window.logMasuk = async () => {
+    const email = document.getElementById('loginEmail').value;
+    const password = document.getElementById('loginPassword').value;
+
+    try {
+        await signInWithEmailAndPassword(auth, email, password);
+        alert("Log masuk berjaya!");
+    } catch (error) {
+        alert("Ralat: " + error.message);
+    }
+};
+
+// 3. Fungsi Semak Status Admin (Dipanggil automatik bila status login berubah)
+onAuthStateChanged(auth, async (user) => {
+    const btnUpdate = document.getElementById("btnUpdate");
     
-    <div id="profil" class="card" style="display:none;">
-        <h3>Maklumat Pembayaran</h3>
-        <p><strong>Nama:</strong> <span id="displayNama"></span></p>
-        <p><strong>Jumlah Bayaran:</strong> RM <span id="displayBayaran"></span></p>
-        <p><strong>Baki Perlu Dibayar:</strong> RM <span id="displayBaki"></span></p>
-
-        <div class="info-box">
-            <p><strong>Cara Pembayaran:</strong> BSN 0410041000169514 (Surau Al Falah TSCC)</p>
-            <p><strong>Hantar Resit (WhatsApp):</strong> En. Ismail Bin Ishak (017-7000242)</p>
-            <p><strong>Pertanyaan:</strong> En. Awang Mohd Fauzi (013-3333333)</p>
-        </div>
-    </div>
-
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
-        import { getAuth, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyDqPxa5AkFOI38AJ1mcwDGAgg8UN9JYAb4",
-            authDomain: "korbansmart2027.firebaseapp.com",
-            projectId: "korbansmart2027",
-            storageBucket: "korbansmart2027.firebasestorage.app",
-            messagingSenderId: "475740547773",
-            appId: "1:475740547773:web:0372cdb07699062c4aa5d4",
-            measurementId: "G-KW3ML05FC6"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
-        const HARGA_PENUH = 800;
-
-        window.lupaPassword = async () => {
-            const email = document.getElementById('searchEmail').value;
-            if (!email) { alert("Sila masukkan email anda di ruangan 'Semak Profil & Baki' dahulu!"); return; }
+    if (user) {
+        // Pengguna sudah login, semak dalam Firestore 'users'
+        try {
+            const userDoc = await getDoc(doc(db, "users", user.email));
             
-            try {
-                await sendPasswordResetEmail(auth, email);
-                alert("Pautan set semula kata laluan telah dihantar ke email anda.");
-            } catch (e) { alert("Error: " + e.message); }
-        };
-
-        document.getElementById('daftarForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            try {
-                await addDoc(collection(db, "peserta"), {
-                    nama: document.getElementById('nama').value,
-                    email: document.getElementById('email').value,
-                    bahagian: document.getElementById('bahagian').value,
-                    password: document.getElementById('password').value,
-                    bayaran: 0
-                });
-                alert("Pendaftaran Berjaya!");
-            } catch (e) { alert("Error: " + e.message); }
-        });
-
-        window.semakData = async () => {
-            const email = document.getElementById('searchEmail').value;
-            const q = query(collection(db, "peserta"), where("email", "==", email));
-            const querySnapshot = await getDocs(q);
-
-            if (querySnapshot.empty) { alert("Data tidak dijumpai!"); return; }
-
-            querySnapshot.forEach((d) => {
-                const data = d.data();
-                const baki = HARGA_PENUH - data.bayaran;
-                document.getElementById('displayNama').innerText = data.nama;
-                document.getElementById('displayBayaran').innerText = data.bayaran;
-                document.getElementById('displayBaki').innerText = baki;
-                document.getElementById('profil').style.display = 'block';
-            });
-        };
-    </script>
-</body>
-</html>
+            if (userDoc.exists() && userDoc.data().isAdmin === true) {
+                // Jika Admin, tunjukkan butang
+                btnUpdate.style.display = "block";
+            } else {
+                // Jika bukan Admin
+                btnUpdate.style.display = "none";
+            }
+        } catch (e) {
+            console.error("Gagal semak admin:", e);
+        }
+    } else {
+        // Pengguna logout
+        btnUpdate.style.display = "none";
+    }
+});
