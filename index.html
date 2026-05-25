@@ -57,33 +57,46 @@
 
         // SEMAK ADMIN
         onAuthStateChanged(auth, async (user) => {
-            const btnUpdate = document.getElementById("btnUpdate");
-            if (user) {
-                const userDoc = await getDoc(doc(db, "users", user.email));
-                if (userDoc.exists() && userDoc.data().isAdmin === true) {
-                    btnUpdate.style.display = "block";
-                }
-            } else {
-                btnUpdate.style.display = "none";
-            }
-        });
+    const btnUpdate = document.getElementById("btnUpdate");
+    // Sembunyikan butang secara lalai
+    btnUpdate.style.display = "none"; 
+    
+    if (user) {
+        // Hanya jika pengguna login, baru semak koleksi 'users'
+        const userDoc = await getDoc(doc(db, "users", user.email));
+        if (userDoc.exists() && userDoc.data().isAdmin === true) {
+            btnUpdate.style.display = "block"; // Hanya muncul jika admin
+        }
+    }
+});
 
         // FUNGSI PAPAR DATA PESERTA
-        window.bukaKemaskini = async () => {
-            const panel = document.getElementById("panelAdmin");
-            const senarai = document.getElementById("senaraiPeserta");
-            panel.style.display = "block";
-            senarai.innerHTML = "Memuatkan data...";
+       window.bukaKemaskini = async () => {
+    const panel = document.getElementById("panelAdmin");
+    const senarai = document.getElementById("senaraiPeserta");
+    panel.style.display = "block";
+    senarai.innerHTML = "Memuatkan data...";
 
-            const querySnapshot = await getDocs(collection(db, "peserta"));
-            senarai.innerHTML = "";
-            querySnapshot.forEach((doc) => {
-                const data = doc.data();
-                const li = document.createElement("li");
-                li.textContent = "Peserta: " + data.nama;
-                senarai.appendChild(li);
-            });
-        };
+    try {
+        const querySnapshot = await getDocs(collection(db, "peserta"));
+        senarai.innerHTML = ""; // Kosongkan
+        
+        if (querySnapshot.empty) {
+            senarai.innerHTML = "Tiada peserta dijumpai.";
+        }
+
+        querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            const li = document.createElement("li");
+            // Pastikan field di sini SAMA dengan field dalam Firestore (iaitu 'nama')
+            li.textContent = "Peserta: " + (data.nama || "Tiada Nama"); 
+            senarai.appendChild(li);
+        });
+    } catch (error) {
+        console.error("Ralat ambil data:", error);
+        senarai.innerHTML = "Gagal memuatkan data.";
+    }
+};
     </script>
 </body>
 </html>
