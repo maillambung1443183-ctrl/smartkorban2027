@@ -2,104 +2,112 @@
 <html lang="ms">
 <head>
     <meta charset="UTF-8">
-    <title>Sistem KorbanSmart 2027</title>
+    <title>KorbanSmart 2027</title>
     <style>
-        body { font-family: sans-serif; padding: 20px; text-align: center; }
-        input { padding: 8px; margin: 5px; width: 250px; }
-        button { padding: 10px 20px; cursor: pointer; }
-        #btnUpdate { margin-top: 20px; background-color: #28a745; color: white; border: none; }
-        #panelAdmin { display: none; padding: 20px; border: 2px solid #28a745; margin-top: 20px; text-align: left; }
+        :root { --primary: #6366f1; --bg: #f8fafc; }
+        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #e0e7ff, #f3f4f6); min-height: 100vh; display: flex; justify-content: center; align-items: center; margin: 0; }
+        .card { background: rgba(255, 255, 255, 0.9); padding: 2.5rem; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 350px; text-align: center; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; margin-top: 10px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .btn-login { background: var(--primary); color: white; }
+        .btn-register { background: #10b981; color: white; }
+        .hidden { display: none; }
+        #panelAdmin { margin-top: 20px; padding: 15px; border-radius: 10px; background: white; text-align: left; }
     </style>
 </head>
 <body>
 
-    <h2 id="tajukRahsia" onclick="tambahKetik()" style="cursor: pointer;">KorbanSmart 2027</h2>
+    <div class="card" id="mainCard">
+        <h2 id="tajukRahsia" onclick="tambahKetik()" style="cursor: pointer;">KorbanSmart 2027</h2>
+        
+        <div id="loginForm">
+            <input type="email" id="loginEmail" placeholder="E-mel">
+            <input type="password" id="loginPassword" placeholder="Kata Laluan">
+            <button class="btn-login" onclick="logMasuk()">Log Masuk</button>
+            <button class="btn-register" onclick="daftarPeserta()">Daftar Sebagai Peserta</button>
+            <p style="font-size: 0.8rem; color: #666; cursor: pointer;" onclick="lupaPassword()">Lupa kata laluan?</p>
+        </div>
 
-    <div id="loginForm">
-        <input type="email" id="loginEmail" placeholder="E-mel"><br>
-        <input type="password" id="loginPassword" placeholder="Kata Laluan"><br>
-        <button id="btnLogin" onclick="logMasuk()">Log Masuk</button>
-        <br><br>
-        <a href="#" onclick="lupaKataLaluan()" style="color: blue; cursor: pointer;">Lupa kata laluan?</a>
-    </div>
+        <div id="dashboardPeserta" class="hidden">
+            <h3>Selamat Datang!</h3>
+            <input type="text" id="inputNama" placeholder="Nama Penuh Peserta">
+            <button class="btn-login" onclick="hantarPendaftaran()">Hantar Pendaftaran</button>
+        </div>
 
-    <button id="btnUpdate" style="display: none;" onclick="bukaKemaskini()">Panel Admin (Senarai Peserta)</button>
-
-    <div id="panelAdmin">
-        <h3>Senarai Peserta</h3>
-        <ul id="senaraiPeserta"></ul>
-        <button onclick="document.getElementById('panelAdmin').style.display='none'">Tutup</button>
+        <button id="btnUpdate" class="hidden" onclick="bukaKemaskini()">Panel Admin</button>
+        <div id="panelAdmin" class="hidden">
+            <h4>Senarai Peserta:</h4>
+            <ul id="senaraiPeserta"></ul>
+        </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
-        import { getFirestore, doc, getDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, collection, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
 
-        // GANTIKAN DENGAN KONFIGURASI PROJEK ANDA
-        const firebaseConfig = {
-            apiKey: "AIzaSyDqPxa5AkFOI38AJ1mcwDGAgg8UN9JYAb4",
-            authDomain: "korbansmart2027.firebaseapp.com",
-            projectId: "korbansmart2027",
-            storageBucket: "korbansmart2027.firebasestorage.app",
-            appId: "1:475740547773:web:0372cdb07699062c4aa5d4",
-        };
-
+        // GANTI DATA FIREBASE ANDA DI SINI
+        const firebaseConfig = { apiKey: "AIzaSyDqPxa5AkFOI38AJ1mcwDGAgg8UN9JYAb4",
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // Fungsi Log Masuk
         window.logMasuk = async () => {
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPassword').value;
             try {
-                await signInWithEmailAndPassword(auth, email, password);
+                await signInWithEmailAndPassword(auth, document.getElementById('loginEmail').value, document.getElementById('loginPassword').value);
                 alert("Log masuk berjaya!");
-            } catch (error) { alert("Ralat: " + error.message); }
+            } catch (e) { alert(e.message); }
         };
 
-        // Fungsi Lupa Kata Laluan
-        window.lupaKataLaluan = async () => {
+        window.daftarPeserta = async () => {
             const email = document.getElementById('loginEmail').value;
-            if (!email) return alert("Sila masukkan e-mel di ruangan atas.");
             try {
-                await sendPasswordResetEmail(auth, email);
-                alert("E-mel set semula kata laluan telah dihantar ke " + email);
-            } catch (error) { alert("Ralat: " + error.message); }
+                await createUserWithEmailAndPassword(auth, email, document.getElementById('loginPassword').value);
+                await setDoc(doc(db, "users", email), { isAdmin: false });
+                alert("Pendaftaran berjaya!");
+            } catch (e) { alert(e.message); }
         };
 
-        // Fungsi 5 kali ketik
-        let kiraanKetik = 0;
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                document.getElementById("loginForm").classList.add("hidden");
+                document.getElementById("dashboardPeserta").classList.remove("hidden");
+            }
+        });
+
+        let kiraan = 0;
         window.tambahKetik = async () => {
-            kiraanKetik++;
-            if (kiraanKetik === 5) {
+            kiraan++;
+            if (kiraan === 5) {
                 const user = auth.currentUser;
-                if (!user) return alert("Sila log masuk dahulu!");
-                
-                const userDoc = await getDoc(doc(db, "users", user.email));
-                if (userDoc.exists() && userDoc.data().isAdmin === true) {
-                    document.getElementById("btnUpdate").style.display = "block";
-                    alert("Mod Admin Diaktifkan!");
-                } else {
-                    alert("Anda bukan admin.");
+                if(user) {
+                    const snap = await getDoc(doc(db, "users", user.email));
+                    if(snap.data()?.isAdmin) {
+                        document.getElementById("btnUpdate").classList.remove("hidden");
+                        alert("Mod Admin Diaktifkan!");
+                    }
                 }
-                kiraanKetik = 0; 
+                kiraan = 0;
             }
         };
 
-        // Fungsi Buka Panel Admin
+        window.hantarPendaftaran = async () => {
+            await addDoc(collection(db, "peserta"), { nama: document.getElementById('inputNama').value });
+            alert("Pendaftaran dihantar!");
+        };
+
         window.bukaKemaskini = async () => {
             const panel = document.getElementById("panelAdmin");
-            const senarai = document.getElementById("senaraiPeserta");
-            panel.style.display = "block";
-            
-            const querySnapshot = await getDocs(collection(db, "peserta"));
-            senarai.innerHTML = "";
-            querySnapshot.forEach((doc) => {
-                const data = doc.data();
-                senarai.innerHTML += `<li>${data.nama}</li>`;
-            });
+            panel.classList.remove("hidden");
+            const snap = await getDocs(collection(db, "peserta"));
+            let html = "";
+            snap.forEach(d => html += `<li>${d.data().nama}</li>`);
+            document.getElementById("senaraiPeserta").innerHTML = html;
+        };
+
+        window.lupaPassword = async () => {
+            await sendPasswordResetEmail(auth, document.getElementById('loginEmail').value);
+            alert("E-mel set semula kata laluan telah dihantar.");
         };
     </script>
 </body>
