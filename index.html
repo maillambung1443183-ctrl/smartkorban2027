@@ -71,7 +71,6 @@
         const db = getFirestore(app);
 
         window.logMasuk = () => signInWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('pass').value).catch(e => alert(e.message));
-        
         window.daftar = async () => {
             try {
                 await createUserWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('pass').value);
@@ -79,7 +78,6 @@
                 alert("Berjaya daftar! Sila log masuk.");
             } catch(e) { alert(e.message); }
         };
-        
         window.keluar = () => signOut(auth).then(() => location.reload());
         
         window.hantar = async () => {
@@ -101,6 +99,7 @@
             }
         });
 
+        // Admin & Panel Admin
         let klik = 0;
         window.kiraAdmin = async () => {
             klik++;
