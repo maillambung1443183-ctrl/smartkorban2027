@@ -1,54 +1,93 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
-import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem KorbanSmart 2027</title>
+    <style>
+        body { font-family: sans-serif; display: flex; justify-content: center; padding-top: 50px; }
+        #authBox { padding: 20px; border: 1px solid #ccc; border-radius: 8px; width: 350px; box-shadow: 2px 2px 10px #eee; }
+        input { width: 100%; padding: 8px; margin-bottom: 10px; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; cursor: pointer; border: none; border-radius: 4px; }
+        #btnLogin { background-color: #007bff; color: white; }
+        #btnLogKeluar { background-color: #dc3545; color: white; margin-top: 10px; }
+        #btnUpdate { background-color: #28a745; color: white; margin-top: 10px; display: none; }
+    </style>
+</head>
+<body>
 
-// 1. Konfigurasi Firebase (Masukkan kunci anda di sini)
-const firebaseConfig = {
-    apiKey: "AIzaSyDqPxa5AkFOI38AJ1mcwDGAgg8UN9JYAb4",
-    authDomain: "korbansmart2027.firebaseapp.com",
-    projectId: "korbansmart2027",
-    storageBucket: "korbansmart2027.appspot.com",
-    appId: "1:475740547773:web:0372cdb07699062c4aa5d4",
-};
+    <div id="authBox">
+        <h3>Sistem KorbanSmart</h3>
+        
+        <input type="email" id="loginEmail" placeholder="E-mel">
+        <input type="password" id="loginPassword" placeholder="Kata laluan">
+        
+        <button id="btnLogin" onclick="logMasuk()">Log Masuk</button>
+        <button id="btnLogKeluar" onclick="logKeluar()" style="display:none;">Log Keluar</button>
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+        <button id="btnUpdate">Kemaskini Data (Admin Sahaja)</button>
+    </div>
 
-// 2. Fungsi Log Masuk
-window.logMasuk = async () => {
-    const email = document.getElementById('loginEmail').value;
-    const password = document.getElementById('loginPassword').value;
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
 
-    try {
-        await signInWithEmailAndPassword(auth, email, password);
-        alert("Log masuk berjaya!");
-    } catch (error) {
-        alert("Ralat: " + error.message);
-    }
-};
+        // Konfigurasi Firebase anda
+        const firebaseConfig = {
+            apiKey: "AIzaSyDqPxa5AkFOI38AJ1mcwDGAgg8UN9JYAb4",
+            authDomain: "korbansmart2027.firebaseapp.com",
+            projectId: "korbansmart2027",
+            storageBucket: "korbansmart2027.appspot.com",
+            appId: "1:475740547773:web:0372cdb07699062c4aa5d4"
+        };
 
-// 3. Fungsi Semak Status Admin (Dipanggil automatik bila status login berubah)
-onAuthStateChanged(auth, async (user) => {
-    const btnUpdate = document.getElementById("btnUpdate");
-    
-    if (user) {
-        // Pengguna sudah login, semak dalam Firestore 'users'
-        try {
-            const userDoc = await getDoc(doc(db, "users", user.email));
-            
-            if (userDoc.exists() && userDoc.data().isAdmin === true) {
-                // Jika Admin, tunjukkan butang
-                btnUpdate.style.display = "block";
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Fungsi Log Masuk
+        window.logMasuk = async () => {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                alert("Berjaya Log Masuk!");
+            } catch (error) {
+                alert("Ralat: " + error.message);
+            }
+        };
+
+        // Fungsi Log Keluar
+        window.logKeluar = () => {
+            signOut(auth).then(() => {
+                location.reload();
+            });
+        };
+
+        // Fungsi automatik semak Admin
+        onAuthStateChanged(auth, async (user) => {
+            const btnUpdate = document.getElementById("btnUpdate");
+            const btnLogin = document.getElementById("btnLogin");
+            const btnLogKeluar = document.getElementById("btnLogKeluar");
+
+            if (user) {
+                btnLogin.style.display = "none";
+                btnLogKeluar.style.display = "block";
+
+                try {
+                    // Semak status dalam koleksi 'users'
+                    const userDoc = await getDoc(doc(db, "users", user.email));
+                    if (userDoc.exists() && userDoc.data().isAdmin === true) {
+                        btnUpdate.style.display = "block";
+                    }
+                } catch (e) { console.error(e); }
             } else {
-                // Jika bukan Admin
+                btnLogin.style.display = "block";
+                btnLogKeluar.style.display = "none";
                 btnUpdate.style.display = "none";
             }
-        } catch (e) {
-            console.error("Gagal semak admin:", e);
-        }
-    } else {
-        // Pengguna logout
-        btnUpdate.style.display = "none";
-    }
-});
+        });
+    </script>
+</body>
+</html>
