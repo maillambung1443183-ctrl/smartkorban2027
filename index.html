@@ -5,12 +5,13 @@
     <title>KorbanSmart 2027</title>
     <style>
         body { font-family: sans-serif; background: #f3f4f6; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .card { background: white; padding: 2rem; border-radius: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); width: 320px; text-align: center; }
+        .card { background: white; padding: 2rem; border-radius: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); width: 350px; text-align: center; }
         input { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
         button { width: 100%; padding: 10px; margin-top: 8px; border: none; border-radius: 5px; cursor: pointer; color: white; font-weight: bold; }
         .bg-blue { background: #4f46e5; } .bg-green { background: #059669; } .bg-red { background: #dc2626; }
         .hidden { display: none; }
-        .info { font-size: 0.85rem; color: #444; text-align: left; background: #eef2ff; padding: 10px; border-radius: 5px; margin-top: 10px; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.8rem; margin-top: 10px; }
+        th, td { border: 1px solid #ddd; padding: 5px; }
     </style>
 </head>
 <body>
@@ -18,33 +19,30 @@
     <div class="card">
         <h2 id="tajuk" onclick="kiraAdmin()" style="cursor: pointer;">KorbanSmart 2027</h2>
 
-        <!-- Login -->
         <div id="authDiv">
             <input type="email" id="email" placeholder="E-mel">
             <input type="password" id="pass" placeholder="Kata Laluan">
             <button class="bg-blue" onclick="logMasuk()">Log Masuk</button>
             <button class="bg-green" onclick="daftar()">Daftar</button>
-            <p onclick="lupaPass()" style="cursor: pointer; font-size: 12px; color: blue;">Lupa kata laluan?</p>
         </div>
 
-        <!-- Dashboard (Paparan Bertukar) -->
         <div id="dashDiv" class="hidden">
-            <!-- Paparan 1: Borang -->
             <div id="viewBorang">
                 <h3>Borang Pendaftaran</h3>
                 <input type="text" id="nama" placeholder="Nama Peserta">
                 <input type="number" id="jumlah" placeholder="Jumlah Bayaran (RM)">
                 <input type="text" id="rujukan" placeholder="No Rujukan Bank">
-                <button class="bg-green" onclick="hantar()">Hantar & Kira Baki</button>
-                <button class="bg-blue" onclick="tukarView('viewRekod')">Lihat Rekod Bayaran</button>
+                <button class="bg-green" onclick="hantar()">Hantar Bayaran</button>
+                <button class="bg-blue" onclick="tukarView('viewRekod')">Lihat Jadual Rekod</button>
             </div>
 
-            <!-- Paparan 2: Rekod -->
             <div id="viewRekod" class="hidden">
-                <h3>Rekod Bayaran</h3>
-                <div class="info">
-                    <b>Baki Terkini Anda:</b> RM <span id="bakiText">800</span>
-                </div>
+                <h3>Jadual Pembayaran</h3>
+                <table>
+                    <thead><tr><th>Tarikh</th><th>Jumlah</th><th>Ref</th></tr></thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+                <p><b>Baki Terkini: RM <span id="bakiText">800</span></b></p>
                 <button class="bg-blue" onclick="tukarView('viewBorang')">Kembali ke Borang</button>
             </div>
 
@@ -56,8 +54,8 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
+        import { getFirestore, doc, setDoc, collection, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
 
         const config = { apiKey: "AIzaSyDqPxa5AkFOI38AJ1mcwDGAgg8UN9JYAb4", authDomain: "korbansmart2027.firebaseapp.com", projectId: "korbansmart2027", storageBucket: "korbansmart2027.firebasestorage.app", appId: "1:475740547773:web:0372cdb07699062c4aa5d4" };
         const app = initializeApp(config);
@@ -65,12 +63,11 @@
         const db = getFirestore(app);
 
         window.logMasuk = () => signInWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('pass').value)
-            .then(() => { document.getElementById('authDiv').classList.add('hidden'); document.getElementById('dashDiv').classList.remove('hidden'); })
+            .then(() => { document.getElementById('authDiv').classList.add('hidden'); document.getElementById('dashDiv').classList.remove('hidden'); loadRekod(); })
             .catch(e => alert(e.message));
 
-        window.daftar = async () => { try { await createUserWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('pass').value); alert("Berjaya daftar!"); } catch(e) { alert(e.message); } };
+        window.daftar = async () => { try { await createUserWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('pass').value); alert("Berjaya!"); } catch(e) { alert(e.message); } };
         window.logKeluarManual = () => { signOut(auth); location.reload(); };
-        window.lupaPass = () => sendPasswordResetEmail(auth, document.getElementById('email').value).then(() => alert("Cek email!"));
 
         window.tukarView = (viewId) => {
             document.getElementById('viewBorang').classList.add('hidden');
@@ -80,25 +77,36 @@
 
         window.hantar = async () => {
             const bayar = parseFloat(document.getElementById('jumlah').value);
-            if (!bayar) return alert("Masukkan jumlah bayaran!");
-            const baki = 800 - bayar;
-            document.getElementById('bakiText').innerText = baki > 0 ? baki : 0;
-            
+            const ref = document.getElementById('rujukan').value;
             await addDoc(collection(db, "peserta"), { 
+                email: auth.currentUser.email,
                 nama: document.getElementById('nama').value,
                 jumlah: bayar,
-                rujukan: document.getElementById('rujukan').value,
-                baki: baki
+                rujukan: ref,
+                tarikh: new Date().toLocaleDateString()
             });
-            alert("Berjaya! Baki anda: RM " + (baki > 0 ? baki : 0));
+            alert("Berjaya direkod!");
+            loadRekod();
             tukarView('viewRekod');
         };
 
-        window.kiraAdmin = async () => { /* Logik Admin kekal */ };
+        async function loadRekod() {
+            const q = query(collection(db, "peserta"), where("email", "==", auth.currentUser.email));
+            const snap = await getDocs(q);
+            let html = "", total = 0;
+            snap.forEach(d => {
+                let data = d.data();
+                html += `<tr><td>${data.tarikh}</td><td>RM${data.jumlah}</td><td>${data.rujukan}</td></tr>`;
+                total += data.jumlah;
+            });
+            document.getElementById('tableBody').innerHTML = html;
+            document.getElementById('bakiText').innerText = (800 - total);
+        }
+
         window.bukaAdmin = async () => {
             const snap = await getDocs(collection(db, "peserta"));
-            let list = "Rekod Bayaran:\n";
-            snap.forEach(d => list += `${d.data().nama}: RM${d.data().jumlah} (Baki: RM${d.data().baki})\n`);
+            let list = "Semua Rekod:\n";
+            snap.forEach(d => list += `${d.data().nama}: RM${d.data().jumlah}\n`);
             alert(list);
         };
     </script>
