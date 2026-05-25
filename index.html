@@ -21,6 +21,7 @@
     <div class="card">
         <h2 id="tajuk" onclick="kiraAdmin()" style="cursor: pointer;">KorbanSmart 2027</h2>
 
+        <!-- Bahagian Login -->
         <div id="authDiv">
             <input type="email" id="email" placeholder="E-mel">
             <input type="password" id="pass" placeholder="Kata Laluan">
@@ -29,18 +30,17 @@
             <p onclick="lupaPass()" style="cursor: pointer; font-size: 12px; color: blue;">Lupa kata laluan?</p>
         </div>
 
+        <!-- Bahagian Dashboard Peserta -->
         <div id="dashDiv" class="hidden">
             <h3>Borang Pendaftaran</h3>
             <input type="text" id="nama" placeholder="Nama Peserta">
-            <input type="number" id="perluBayar" placeholder="Jumlah Perlu Bayar (RM 800)">
-            <input type="number" id="jumlah" placeholder="Jumlah Bayaran Sekarang (RM)">
+            <input type="number" id="jumlah" placeholder="Jumlah Bayaran (RM)">
             <input type="text" id="rujukan" placeholder="No Rujukan Bank">
             
-            <div class="info" id="statusBayar">
-                <b>Maklumat Bayaran:</b><br>
-                Maybank: 551089424735<br>
+            <div class="info">
+                Maybank: <b>551089424735</b><br>
                 KRT TAMAN SERI CHINCHIN<br>
-                Resit: 017-7000242
+                Resit: <b>017-7000242</b>
             </div>
 
             <button class="bg-green" onclick="hantar()">Hantar Pendaftaran</button>
@@ -55,37 +55,76 @@
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
 
-        const config = { apiKey: "AIzaSyDqPxa5AkFOI38AJ1mcwDGAgg8UN9JYAb4", authDomain: "korbansmart2027.firebaseapp.com", projectId: "korbansmart2027", storageBucket: "korbansmart2027.firebasestorage.app", appId: "1:475740547773:web:0372cdb07699062c4aa5d4" };
+        const config = { 
+            apiKey: "AIzaSyDqPxa5AkFOI38AJ1mcwDGAgg8UN9JYAb4", 
+            authDomain: "korbansmart2027.firebaseapp.com", 
+            projectId: "korbansmart2027", 
+            storageBucket: "korbansmart2027.firebasestorage.app", 
+            appId: "1:475740547773:web:0372cdb07699062c4aa5d4" 
+        };
+        
         const app = initializeApp(config);
         const auth = getAuth(app);
         const db = getFirestore(app);
 
+        // Fungsi Autentikasi
         window.logMasuk = () => signInWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('pass').value).catch(e => alert(e.message));
-        window.daftar = async () => { try { await createUserWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('pass').value); await setDoc(doc(db, "users", document.getElementById('email').value), { isAdmin: false }); alert("Berjaya!"); } catch(e) { alert(e.message); } };
-        window.lupaPass = () => sendPasswordResetEmail(auth, document.getElementById('email').value).then(() => alert("Cek email!"));
+        window.daftar = async () => { 
+            try { 
+                await createUserWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('pass').value); 
+                await setDoc(doc(db, "users", document.getElementById('email').value), { isAdmin: false }); 
+                alert("Berjaya mendaftar! Sila log masuk."); 
+            } catch(e) { alert(e.message); } 
+        };
+        window.lupaPass = () => sendPasswordResetEmail(auth, document.getElementById('email').value).then(() => alert("Pautan set semula kata laluan telah dihantar ke e-mel!"));
         window.keluar = () => signOut(auth).then(() => location.reload());
         
+        // Fungsi Hantar Pendaftaran
         window.hantar = async () => {
-            const perlu = parseFloat(document.getElementById('perluBayar').value);
-            const bayar = parseFloat(document.getElementById('jumlah').value);
-            const baki = perlu - bayar;
+            const nama = document.getElementById('nama').value;
+            const jumlah = document.getElementById('jumlah').value;
+            const rujukan = document.getElementById('rujukan').value;
+
+            if(!nama || !jumlah || !rujukan) { alert("Sila isi semua maklumat!"); return; }
 
             await addDoc(collection(db, "peserta"), { 
-                nama: document.getElementById('nama').value,
-                dibayar: bayar,
-                baki: baki,
-                rujukan: document.getElementById('rujukan').value
+                nama: nama,
+                jumlahBayar: jumlah,
+                rujukan: rujukan,
+                tarikh: new Date().toLocaleDateString()
             });
-            alert("Pendaftaran Berjaya! Baki anda: RM " + baki);
-            document.getElementById('nama').value = "";
+            alert("Pendaftaran berjaya! Sila WhatsApp resit kepada Admin di 017-7000242.");
+            location.reload();
         };
 
-        onAuthStateChanged(auth, (user) => { if(user) { document.getElementById('authDiv').classList.add('hidden'); document.getElementById('dashDiv').classList.remove('hidden'); } });
+        // Tukar Paparan
+        onAuthStateChanged(auth, (user) => { 
+            if(user) { 
+                document.getElementById('authDiv').classList.add('hidden'); 
+                document.getElementById('dashDiv').classList.remove('hidden'); 
+            } 
+        });
 
-        // Admin logik kekal sama
+        // Fungsi Admin (Klik 5 kali pada tajuk untuk buka)
         let klik = 0;
-        window.kiraAdmin = async () => { klik++; if(klik === 5) { const u = auth.currentUser; if(u) { const s = await getDoc(doc(db, "users", u.email)); if(s.exists() && s.data().isAdmin) document.getElementById('btnAdmin').classList.remove('hidden'); } klik = 0; } };
-        window.bukaAdmin = async () => { const snap = await getDocs(collection(db, "peserta")); let list = "Senarai:\n"; snap.forEach(d => list += d.data().nama + " | Dibayar: RM" + d.data().dibayar + " | Baki: RM" + d.data().baki + "\n"); alert(list); };
+        window.kiraAdmin = async () => { 
+            klik++; 
+            if(klik === 5) { 
+                const u = auth.currentUser; 
+                if(u) { 
+                    const s = await getDoc(doc(db, "users", u.email)); 
+                    if(s.exists() && s.data().isAdmin) document.getElementById('btnAdmin').classList.remove('hidden'); 
+                } 
+                klik = 0; 
+            } 
+        };
+        
+        window.bukaAdmin = async () => { 
+            const snap = await getDocs(collection(db, "peserta")); 
+            let list = "Senarai Peserta:\n\n"; 
+            snap.forEach(d => list += d.data().nama + " | RM" + d.data().jumlahBayar + " | Ref: " + d.data().rujukan + "\n"); 
+            alert(list); 
+        };
     </script>
 </body>
 </html>
