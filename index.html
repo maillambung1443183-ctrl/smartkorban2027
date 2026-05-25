@@ -5,13 +5,14 @@
     <title>KorbanSmart 2027</title>
     <style>
         body { font-family: sans-serif; background: #f3f4f6; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .card { background: white; padding: 2rem; border-radius: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); width: 320px; text-align: center; }
-        input { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        .card { background: white; padding: 2rem; border-radius: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); width: 350px; text-align: center; }
+        input, select { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
         button { width: 100%; padding: 10px; margin-top: 8px; border: none; border-radius: 5px; cursor: pointer; color: white; font-weight: bold; }
         .bg-blue { background: #4f46e5; }
         .bg-green { background: #059669; }
         .bg-red { background: #dc2626; }
         .hidden { display: none; }
+        .info { font-size: 0.85rem; color: #444; text-align: left; background: #eef2ff; padding: 10px; border-radius: 5px; margin-top: 10px; }
     </style>
 </head>
 <body>
@@ -24,13 +25,28 @@
             <input type="password" id="pass" placeholder="Kata Laluan">
             <button class="bg-blue" onclick="logMasuk()">Log Masuk</button>
             <button class="bg-green" onclick="daftar()">Daftar</button>
-            <p onclick="lupaPass()" style="cursor: pointer; font-size: 12px; color: blue;">Lupa kata laluan?</p>
         </div>
 
         <div id="dashDiv" class="hidden">
             <h3>Borang Pendaftaran</h3>
             <input type="text" id="nama" placeholder="Nama Penuh">
-            <button class="bg-green" onclick="hantar()">Daftar Korban</button>
+            <select id="bahagian">
+                <option value="1">1 Bahagian (RM 800)</option>
+                <option value="2">2 Bahagian (RM 1600)</option>
+            </select>
+            <select id="caraBayar">
+                <option value="Penuh">Bayaran Penuh</option>
+                <option value="Ansuran">Bayaran Ansuran</option>
+            </select>
+            
+            <div class="info">
+                <b>Maklumat Bayaran:</b><br>
+                Maybank: <b>551089424735</b><br>
+                KRT TAMAN SERI CHINCHIN<br><br>
+                Sila hantar resit ke WhatsApp: <b>017-7000242</b>
+            </div>
+
+            <button class="bg-green" onclick="hantar()">Hantar Pendaftaran</button>
             <button class="bg-red" onclick="keluar()">Log Keluar</button>
         </div>
 
@@ -39,7 +55,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
 
         const config = {
@@ -63,14 +79,18 @@
                 alert("Berjaya daftar! Sila log masuk.");
             } catch(e) { alert(e.message); }
         };
-
-        window.lupaPass = () => sendPasswordResetEmail(auth, document.getElementById('email').value).then(() => alert("Email set semula dihantar!"));
         
         window.keluar = () => signOut(auth).then(() => location.reload());
         
         window.hantar = async () => {
-            await addDoc(collection(db, "peserta"), { nama: document.getElementById('nama').value });
-            alert("Pendaftaran Berjaya!");
+            const data = {
+                nama: document.getElementById('nama').value,
+                bahagian: document.getElementById('bahagian').value,
+                caraBayar: document.getElementById('caraBayar').value,
+                tarikh: new Date().toLocaleDateString()
+            };
+            await addDoc(collection(db, "peserta"), data);
+            alert("Pendaftaran berjaya! Sila hantar resit ke WhatsApp 017-7000242.");
             document.getElementById('nama').value = "";
         };
 
@@ -96,8 +116,8 @@
 
         window.bukaAdmin = async () => {
             const snap = await getDocs(collection(db, "peserta"));
-            let list = "Senarai:\n";
-            snap.forEach(d => list += d.data().nama + "\n");
+            let list = "Senarai Peserta:\n";
+            snap.forEach(d => list += `${d.data().nama} | ${d.data().caraBayar} | ${d.data().bahagian} Bhg\n`);
             alert(list);
         };
     </script>
