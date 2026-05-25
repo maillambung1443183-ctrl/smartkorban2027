@@ -33,13 +33,13 @@
             <input type="text" id="rujukan" placeholder="No Rujukan Bank">
             
             <div class="info">
-                Maybank: <b>551089424735</b> (KRT TAMAN SERI CHINCHIN)<br>
-                Resit WhatsApp: <b>017-7000242</b><br><br>
-                <b>Baki Perlu Dibayar:</b> RM <span id="bakiText">800</span>
+                Maybank: <b>551089424735</b><br>
+                KRT TAMAN SERI CHINCHIN<br>
+                Resit sila WhatsApp: <b>017-7000242</b>
             </div>
 
-            <button class="bg-green" onclick="hantar()">Daftar & Simpan</button>
-            <button class="bg-red" onclick="logKeluarManual()">Log Keluar</button>
+            <button class="bg-green" onclick="hantar()">Daftar Korban</button>
+            <button class="bg-red" onclick="keluar()">Log Keluar</button>
         </div>
 
         <button id="btnAdmin" class="hidden" onclick="bukaAdmin()">Panel Admin</button>
@@ -47,7 +47,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
 
         const config = { apiKey: "AIzaSyDqPxa5AkFOI38AJ1mcwDGAgg8UN9JYAb4", authDomain: "korbansmart2027.firebaseapp.com", projectId: "korbansmart2027", storageBucket: "korbansmart2027.firebasestorage.app", appId: "1:475740547773:web:0372cdb07699062c4aa5d4" };
@@ -55,44 +55,52 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        window.logMasuk = () => signInWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('pass').value)
-            .then(() => { document.getElementById('authDiv').classList.add('hidden'); document.getElementById('dashDiv').classList.remove('hidden'); })
-            .catch(e => alert(e.message));
-
+        window.logMasuk = () => signInWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('pass').value).catch(e => alert(e.message));
         window.daftar = async () => {
-            try { await createUserWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('pass').value); alert("Berjaya daftar!"); } 
-            catch(e) { alert(e.message); }
+            try {
+                await createUserWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('pass').value);
+                await setDoc(doc(db, "users", document.getElementById('email').value), { isAdmin: false });
+                alert("Berjaya! Sila log masuk.");
+            } catch(e) { alert(e.message); }
         };
-
-        window.logKeluarManual = () => { signOut(auth); location.reload(); };
         window.lupaPass = () => sendPasswordResetEmail(auth, document.getElementById('email').value).then(() => alert("Cek email!"));
-
+        window.keluar = () => signOut(auth).then(() => location.reload());
+        
         window.hantar = async () => {
-            const bayar = parseFloat(document.getElementById('jumlah').value);
-            const baki = 800 - bayar;
-            document.getElementById('bakiText').innerText = baki > 0 ? baki : 0;
-            
             await addDoc(collection(db, "peserta"), { 
                 nama: document.getElementById('nama').value,
-                jumlah: bayar,
-                rujukan: document.getElementById('rujukan').value,
-                baki: baki,
-                email: auth.currentUser.email
+                jumlah: document.getElementById('jumlah').value,
+                rujukan: document.getElementById('rujukan').value
             });
-            alert("Berjaya! Baki anda: RM " + (baki > 0 ? baki : 0));
+            alert("Pendaftaran Berjaya! Sila WhatsApp resit.");
+            document.getElementById('nama').value = "";
+            document.getElementById('jumlah').value = "";
+            document.getElementById('rujukan').value = "";
         };
 
+        onAuthStateChanged(auth, (user) => {
+            if(user) {
+                document.getElementById('authDiv').classList.add('hidden');
+                document.getElementById('dashDiv').classList.remove('hidden');
+            }
+        });
+
+        let klik = 0;
         window.kiraAdmin = async () => {
-            const u = auth.currentUser;
-            if(u) {
-                const s = await getDoc(doc(db, "users", u.email));
-                if(s.exists() && s.data().isAdmin) document.getElementById('btnAdmin').classList.remove('hidden');
+            klik++;
+            if(klik === 5) {
+                const u = auth.currentUser;
+                if(u) {
+                    const s = await getDoc(doc(db, "users", u.email));
+                    if(s.exists() && s.data().isAdmin) document.getElementById('btnAdmin').classList.remove('hidden');
+                }
+                klik = 0;
             }
         };
 
         window.bukaAdmin = async () => {
             const snap = await getDocs(collection(db, "peserta"));
-            let list = "Rekod Bayaran Peserta:\n\n";
+            let list = "Senarai Peserta:\n\n";
             snap.forEach(d => {
                 const data = d.data();
                 list += `Nama: ${data.nama || '-'}\n`;
