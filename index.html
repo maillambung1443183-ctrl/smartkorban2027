@@ -121,7 +121,7 @@
 
         window.kiraAdmin = async () => {
             const pass = prompt("Password Admin:");
-            if (pass !== "admin123") return;
+            if (pass !== "admin300406") return;
             const snap = await getDocs(collection(db, "peserta"));
             snap.forEach(d => {
                 if (confirm(`${d.data().nama} (Status: ${d.data().status}) - RM${d.data().jumlah}\nApprove bayaran ini?`)) {
